@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# TrafficMonitor for Linux launcher.
+# GNOME/Wayland does not let a normal Qt client position or pin its own window,
+# so the Qt overlay uses XWayland unless the user explicitly chooses a platform.
+if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && [ -z "${QT_QPA_PLATFORM:-}" ]; then
+    export QT_QPA_PLATFORM=xcb
+fi
+
+if [ -z "${TRAFFICMONITOR_PLUGIN_DIR:-}" ] && [ -d /usr/lib/trafficmonitor-linux/plugins ]; then
+    export TRAFFICMONITOR_PLUGIN_DIR=/usr/lib/trafficmonitor-linux/plugins
+fi
+
+exec trafficmonitor-linux "$@"

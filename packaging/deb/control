@@ -1,0 +1,10 @@
+Package: trafficmonitor-linux
+Version: 0.1.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: TrafficMonitor for Linux contributors
+Depends: libc6 (>= 2.39), libqt6widgets6 (>= 6.5), libqt6sql6-sqlite, libqt6network6
+Description: Always-on-top network, CPU, memory and GPU monitor
+ TrafficMonitor for Linux is a Qt Widgets system monitor with a floating
+ window, tray icon, SQLite history and a stable C ABI plugin system.

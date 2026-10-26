@@ -1,0 +1,112 @@
+#include "ui/tray_icon.h"
+
+#include <QAction>
+#include <QIcon>
+#include <QMenu>
+#include <QPainter>
+#include <QPixmap>
+#include <QSystemTrayIcon>
+
+namespace tm_linux {
+
+namespace {
+
+QIcon fallbackIcon()
+{
+    QPixmap pixmap(32, 32);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setBrush(QColor(30, 120, 200));
+    painter.setPen(Qt::NoPen);
+    painter.drawRoundedRect(QRectF(1, 1, 30, 30), 6, 6);
+    painter.setPen(Qt::white);
+    QFont font = painter.font();
+    font.setBold(true);
+    font.setPointSize(9);
+    painter.setFont(font);
+    painter.drawText(pixmap.rect(), Qt::AlignCenter, QStringLiteral("TM"));
+    return QIcon(pixmap);
+}
+
+} // namespace
+
+TrayIcon::TrayIcon(QObject* parent)
+    : QObject(parent)
+{
+    QIcon icon = QIcon::fromTheme(QStringLiteral("utilities-system-monitor"));
+    if (icon.isNull()) {
+        icon = fallbackIcon();
+    }
+
+    tray_ = new QSystemTrayIcon(icon, this);
+    menu_ = new QMenu();
+
+    auto* show_hide = menu_->addAction(QStringLiteral("显示/隐藏悬浮窗"));
+    auto* settings = menu_->addAction(QStringLiteral("设置"));
+    menu_->addSeparator();
+    auto* quit = menu_->addAction(QStringLiteral("退出"));
+
+    connect(show_hide, &QAction::triggered, this, &TrayIcon::showHideRequested);
+    connect(settings, &QAction::triggered, this, &TrayIcon::settingsRequested);
+    connect(quit, &QAction::triggered, this, &TrayIcon::quitRequested);
+
+    tray_->setContextMenu(menu_);
+    tray_->setToolTip(QStringLiteral("TrafficMonitor"));
+
+    connect(tray_, &QSystemTrayIcon::activated, this,
+            [this](QSystemTrayIcon::ActivationReason reason) {
+                if (reason == QSystemTrayIcon::Trigger
+                    || reason == QSystemTrayIcon::DoubleClick) {
+                    emit showHideRequested();
+                }
+            });
+}
+
+TrayIcon::~TrayIcon()
+{
+    if (tray_ != nullptr) {
+        tray_->hide();
+    }
+    delete menu_;
+    menu_ = nullptr;
+}
+
+void TrayIcon::show()
+{
+    if (tray_ == nullptr) {
+        return;
+    }
+    tray_->show();
+    if (!QSystemTrayIcon::isSystemTrayAvailable()) {
+        qWarning("TrafficMonitor: system tray is not available; enable the AppIndicator "
+                 "extension with: gnome-extensions enable ubuntu-appindicators@ubuntu.com");
+    }
+}
+
+void TrayIcon::hide()
+{
+    if (tray_ != nullptr) {
+        tray_->hide();
+    }
+}
+
+void TrayIcon::setTooltip(const QString& text)
+{
+    if (tray_ != nullptr) {
+        tray_->setToolTip(text);
+    }
+}
+
+bool TrayIcon::isSystemTrayAvailable() const
+{
+    return QSystemTrayIcon::isSystemTrayAvailable();
+}
+
+QMenu* TrayIcon::menu() const
+{
+    return menu_;
+}
+
+} // namespace tm_linux

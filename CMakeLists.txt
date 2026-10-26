@@ -1,15 +1,69 @@
 cmake_minimum_required(VERSION 3.28)
 project(trafficmonitor_linux VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# 项目未使用 C++ 模块。关闭模块扫描可去掉 -fmodules-ts 等参数，
+# 让 ccache 能正常缓存编译（ccache 不支持模块映射相关参数）。
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+
+add_compile_options(
+    $<$<CONFIG:Debug>:-g3>
+    $<$<CONFIG:Debug>:-O0>
+    $<$<CONFIG:Debug>:-Wall>
+    $<$<CONFIG:Debug>:-Wextra>
+)
+add_compile_definitions($<$<CONFIG:Debug>:TM_DEBUG>)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-pipe)
+endif()
+
+option(TM_USE_CCACHE "Use ccache as compiler launcher when available" ON)
+if(TM_USE_CCACHE)
+    find_program(TM_CCACHE_EXECUTABLE ccache)
+    if(TM_CCACHE_EXECUTABLE)
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${TM_CCACHE_EXECUTABLE}")
+        message(STATUS "Using ccache: ${TM_CCACHE_EXECUTABLE}")
+    endif()
+endif()
+
+option(TM_SEPARATE_DEBUG_SYMBOLS "Split .debug files for Release binaries" OFF)
+if(TM_SEPARATE_DEBUG_SYMBOLS)
+    add_compile_options($<$<CONFIG:Release>:-g>)
+endif()
+
+function(tm_separate_debug_symbols target)
+    if(NOT TM_SEPARATE_DEBUG_SYMBOLS)
+        return()
+    endif()
+    if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+        return()
+    endif()
+    if(NOT CMAKE_OBJCOPY)
+        message(WARNING "CMAKE_OBJCOPY not found; skipping debug symbol split for ${target}")
+        return()
+    endif()
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_OBJCOPY} --only-keep-debug
+                $<TARGET_FILE:${target}> $<TARGET_FILE:${target}>.debug
+        COMMAND ${CMAKE_OBJCOPY} --strip-debug $<TARGET_FILE:${target}>
+        COMMAND ${CMAKE_OBJCOPY}
+                --add-gnu-debuglink=$<TARGET_FILE:${target}>.debug
+                $<TARGET_FILE:${target}>
+        COMMENT "Splitting debug symbols for ${target}"
+        VERBATIM
+    )
+endfunction()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Widgets Sql Network Test)
+find_package(Qt6 6.10 REQUIRED COMPONENTS Core Gui Widgets Sql Network Test)
 
 add_library(tm_core STATIC
     src/core/collectors/network_collector.cpp
@@ -183,6 +237,9 @@ set_tests_properties(app_smoke PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen;XDG_CONFIG_HOME=${CMAKE_BINARY_DIR}/test-config;XDG_DATA_HOME=${CMAKE_BINARY_DIR}/test-data;TRAFFICMONITOR_PLUGIN_DIR=${CMAKE_BINARY_DIR}/plugins"
     TIMEOUT 15
 )
+
+tm_separate_debug_symbols(trafficmonitor-linux)
+tm_separate_debug_symbols(gpu_plugin)
 
 install(TARGETS trafficmonitor-linux RUNTIME DESTINATION bin)
 install(TARGETS gpu_plugin LIBRARY DESTINATION lib/trafficmonitor-linux/plugins)

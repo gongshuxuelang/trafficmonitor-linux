@@ -33,6 +33,40 @@ ctest --test-dir build --output-on-failure
 
 依赖：Ubuntu 26.04、Qt 6.10（最低 6.5）、CMake 3.28+、Ninja、C++20。
 
+构建默认由 Ninja 按 CPU 核数并行；系统装有 `ccache` 时配置阶段会自动启用编译缓存
+（`-DTM_USE_CCACHE=OFF` 可关闭）。
+
+## Debug 构建
+
+使用 CMake presets 一键配置、构建和测试：
+
+```bash
+cmake --preset debug
+cmake --build --preset debug
+ctest --preset debug --output-on-failure
+```
+
+Debug 构建启用 `-g3 -O0 -Wall -Wextra`，定义 `TM_DEBUG`，并把所有日志
+（含 `qDebug`/`qInfo`）带源码位置输出到 stderr。构建输出位于 `build/debug/`。
+
+`run.sh` 会优先运行 `build/debug/trafficmonitor-linux`；也可以通过
+`TRAFFICMONITOR_BUILD_DIR` 指定其他构建目录：
+
+```bash
+TRAFFICMONITOR_BUILD_DIR="$PWD/build/release" ./run.sh
+```
+
+Release 构建默认拆分调试符号：
+
+```bash
+cmake --preset release
+cmake --build --preset release
+```
+
+构建后保留 `build/release/trafficmonitor-linux.debug` 和
+`build/release/plugins/gpu_plugin.so.debug`，gdb 会在同目录自动加载它们。
+不需要拆分时配置 `-DTM_SEPARATE_DEBUG_SYMBOLS=OFF`。
+
 ## 运行
 
 ```bash

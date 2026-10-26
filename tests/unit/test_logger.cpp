@@ -1,3 +1,4 @@
+#include <QDebug>
 #include <QFile>
 #include <QTemporaryDir>
 #include <QTest>
@@ -45,6 +46,48 @@ private slots:
 
         QVERIFY(QFile::exists(path));
         QVERIFY(QFile::exists(path + QStringLiteral(".1")));
+    }
+
+    void dropsDebugMessagesInRelease()
+    {
+#ifdef TM_DEBUG
+        QSKIP("Debug builds keep qDebug messages");
+#else
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const QString path = dir.filePath(QStringLiteral("app.log"));
+
+        {
+            Logger logger(path.toStdString());
+            qDebug("debug-only-message");
+        }
+
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        const QString content = QString::fromUtf8(file.readAll());
+        QVERIFY(!content.contains(QStringLiteral("debug-only-message")));
+#endif
+    }
+
+    void keepsDebugMessagesInDebugBuild()
+    {
+#ifdef TM_DEBUG
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const QString path = dir.filePath(QStringLiteral("app.log"));
+
+        {
+            Logger logger(path.toStdString());
+            qDebug("debug-only-message");
+        }
+
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        const QString content = QString::fromUtf8(file.readAll());
+        QVERIFY(content.contains(QStringLiteral("debug-only-message")));
+#else
+        QSKIP("Release builds drop qDebug messages");
+#endif
     }
 };
 

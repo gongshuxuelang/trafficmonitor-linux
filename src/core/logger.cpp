@@ -77,15 +77,36 @@ void Logger::log(const QString& message)
     file_.flush();
 }
 
-void Logger::messageHandler(QtMsgType type, const QMessageLogContext&, const QString& message)
+void Logger::messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& message)
 {
-    const QString formatted = QStringLiteral("[%1] %2").arg(typeName(type), message);
+#ifndef TM_DEBUG
+    Q_UNUSED(context);
+    if (type == QtDebugMsg) {
+        return;
+    }
+#endif
+
+    QString location;
+#ifdef TM_DEBUG
+    if (context.file != nullptr) {
+        location = QStringLiteral(" %1:%2")
+                       .arg(QString::fromUtf8(context.file))
+                       .arg(context.line);
+    }
+#endif
+
+    const QString formatted =
+        QStringLiteral("[%1]%2 %3").arg(typeName(type), location, message);
     if (instance_ != nullptr) {
         instance_->log(formatted);
     }
+#ifdef TM_DEBUG
+    std::fprintf(stderr, "%s\n", formatted.toLocal8Bit().constData());
+#else
     if (type == QtWarningMsg || type == QtCriticalMsg || type == QtFatalMsg) {
         std::fprintf(stderr, "%s\n", formatted.toLocal8Bit().constData());
     }
+#endif
 }
 
 void Logger::rotateIfNeeded()

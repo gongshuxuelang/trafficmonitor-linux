@@ -1,0 +1,68 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug trafficmonitor-linux",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/debug/trafficmonitor-linux",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "TRAFFICMONITOR_PLUGIN_DIR": "${workspaceFolder}/build/debug/plugins",
+                "QT_QPA_PLATFORM": "xcb"
+            },
+            "stopOnEntry": false,
+            "console": "internalConsole",
+            "sourceLanguages": [
+                "cpp"
+            ],
+            "preLaunchTask": "CMake: build debug"
+        },
+        {
+            "name": "Debug unit test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/debug/${input:testExecutable}",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "TRAFFICMONITOR_PLUGIN_DIR": "${workspaceFolder}/build/debug/plugins",
+                "QT_QPA_PLATFORM": "offscreen"
+            },
+            "stopOnEntry": false,
+            "console": "internalConsole",
+            "sourceLanguages": [
+                "cpp"
+            ],
+            "preLaunchTask": "CMake: build debug"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "testExecutable",
+            "type": "pickString",
+            "description": "选择要调试的测试可执行文件",
+            "options": [
+                "tm_tests",
+                "test_app_settings",
+                "test_cpu_collector",
+                "test_cpu_frequency_collector",
+                "test_disk_collector",
+                "test_floating_window",
+                "test_formatting",
+                "test_gpu_plugin",
+                "test_logger",
+                "test_memory_collector",
+                "test_plugin_host",
+                "test_sampler",
+                "test_settings_dialog",
+                "test_storage",
+                "test_system_metrics",
+                "test_temperature_collector",
+                "test_tray_icon"
+            ],
+            "default": "test_logger"
+        }
+    ]
+}

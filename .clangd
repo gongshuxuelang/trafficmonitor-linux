@@ -1,0 +1,9 @@
+CompileFlags:
+  # clangd 默认只查找 <祖先目录>/compile_commands.json 和 <祖先目录>/build/compile_commands.json，
+  # 本项目使用 build/<config>/ 布局，因此显式指定编译数据库。
+  CompilationDatabase: build/debug
+  # 以下为 GCC 的 C++20 模块依赖扫描专用参数，clang 不认识，会导致解析降级。
+  Remove:
+    - -fmodules-ts
+    - -fmodule-mapper=*
+    - -fdeps-format=*

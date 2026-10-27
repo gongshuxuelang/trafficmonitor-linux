@@ -96,7 +96,15 @@ if [ -z "$QT_PLUGIN_ROOT" ] || [ ! -d "$QT_PLUGIN_ROOT" ]; then
     QT_PLUGIN_ROOT=$(qtpaths6 --query QT_INSTALL_PLUGINS 2>/dev/null || true)
 fi
 if [ -z "$QT_PLUGIN_ROOT" ] || [ ! -d "$QT_PLUGIN_ROOT" ]; then
-    echo "找不到 Qt 插件目录，需要 qmake6 或 qtpaths6" >&2
+    # 回退：从 libQt6Core 的位置推导插件目录
+    QT_CORE=$(ldd "$STAGE/usr/bin/trafficmonitor-linux" 2>/dev/null \
+        | awk '/libQt6Core\.so/ { print $3; exit }')
+    if [ -n "$QT_CORE" ]; then
+        QT_PLUGIN_ROOT="$(dirname "$QT_CORE")/qt6/plugins"
+    fi
+fi
+if [ -z "$QT_PLUGIN_ROOT" ] || [ ! -d "$QT_PLUGIN_ROOT" ]; then
+    echo "找不到 Qt 插件目录，需要 qmake6、qtpaths6 或可用的 Qt6 安装" >&2
     exit 1
 fi
 

@@ -31,7 +31,9 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-依赖：Ubuntu 26.04、Qt 6.10（最低 6.5）、CMake 3.28+、Ninja、C++20。
+依赖：Qt 6.2+、CMake 3.28+、Ninja、C++20。构建矩阵覆盖 Ubuntu 22.04/24.04/26.04、
+Debian 12/13。Ubuntu 22.04 和 Debian 12 自带的 CMake 低于 3.28，
+流水线会自动下载并校验 CMake 3.31.6。
 
 构建默认由 Ninja 按 CPU 核数并行；系统装有 `ccache` 时配置阶段会自动启用编译缓存
 （`-DTM_USE_CCACHE=OFF` 可关闭）。
@@ -129,18 +131,20 @@ cpack --preset deb
 `.github/workflows/daily-release.yml` 每天北京时间 05:00 检查默认分支是否有新提交：
 
 - 没有新提交：跳过。
-- 有新提交：构建、跑测试、生成两个 `.deb`，创建 `v<版本>-<日期>.<短SHA>` 标签并发布 GitHub Release。
+- 有新提交：在 Ubuntu 22.04/24.04/26.04、Debian 12/13 五个容器里并行构建、跑测试，
+  每个系统各生成在线包和离线包，然后创建一个包含全部附件的 GitHub Release。
 - 也可以在 Actions 页面手动运行，勾选 `force` 可以忽略“无新提交”检查。
 
-包文件名格式为 `ubuntu26-trafficmonitor-linux_0.1.0-20261027.abc1234_amd64.deb`，
+包文件名格式为 `<系统>-trafficmonitor-linux_0.1.0-20261027.abc1234_amd64.deb`，
+系统前缀有 `ubuntu22-`、`ubuntu24-`、`ubuntu26-`、`debian12-`、`debian13-`。
 Release 标签为 `v0.1.0-20261027.abc1234`。`0.1.0` 取 `CMakeLists.txt` 的
 `project(... VERSION ...)` 和最近 `v*` 标签前缀中较大的一个；`20261027` 是北京时间日期；
-`abc1234` 是发布提交的短 SHA；`ubuntu26` 是构建系统的标识。
-同一天多次发布用 SHA 区分。需要里程碑版本时，改 `CMakeLists.txt` 的版本号或打 `v1.0.0`
-标签都可以，后续每日包会自动使用更大的前缀。
+`abc1234` 是发布提交的短 SHA。同一天多次发布用 SHA 区分。需要里程碑版本时，改
+`CMakeLists.txt` 的版本号或打 `v1.0.0` 标签都可以，后续每日包会自动使用更大的前缀。
 
-Release 附件包含在线包、离线包和 `SHA256SUMS`。流水线在 `ubuntu:26.04` 容器里构建，
-匹配 Qt 6.10 和 glibc 2.43。工作流文件需要提交到默认分支，定时任务才会生效。
+每个系统在自己的容器里构建，离线包的 glibc 下限对应那个系统。Ubuntu 22.04 和
+Debian 12 的 CMake 低于 3.28，流水线会自动下载 CMake 3.31.6。私有仓库的矩阵会
+按任务数消耗 Actions 分钟。工作流文件需要提交到默认分支，定时任务才会生效。
 
 ## 运行
 

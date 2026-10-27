@@ -19,29 +19,21 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
+  prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    container:
-      # 与构建要求一致：Qt 6.10、GCC 15、CMake 4
-      image: ubuntu:26.04
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+      last_tag: ${{ steps.check.outputs.last_tag }}
+      release: ${{ steps.version.outputs.release }}
+      tag: ${{ steps.version.outputs.tag }}
     env:
       TZ: Asia/Shanghai
-      DEBIAN_FRONTEND: noninteractive
 
     steps:
-      - name: Install git
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends git ca-certificates tzdata
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Mark workspace safe for git
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Check for new commits
         id: check
@@ -67,13 +59,6 @@ jobs:
           LAST_TAG: ${{ steps.check.outputs.last_tag }}
         run: echo "No new commits since $LAST_TAG, skipping."
 
-      - name: Install build dependencies
-        if: steps.check.outputs.should_release == 'true' || inputs.force
-        run: |
-          apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build dpkg-dev file binutils \
-            qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite libqt6svg6
-
       - name: Compute version
         id: version
         if: steps.check.outputs.should_release == 'true' || inputs.force
@@ -97,32 +82,117 @@ jobs:
           echo "release=${RELEASE}" >> "$GITHUB_OUTPUT"
           echo "tag=v${VERSION}-${RELEASE}" >> "$GITHUB_OUTPUT"
 
+  build:
+    needs: prepare
+    if: needs.prepare.outputs.should_release == 'true' || inputs.force
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ubuntu:22.04
+            name: ubuntu22
+          - image: ubuntu:24.04
+            name: ubuntu24
+          - image: ubuntu:26.04
+            name: ubuntu26
+          - image: debian:12
+            name: debian12
+          - image: debian:13
+            name: debian13
+    container:
+      image: ${{ matrix.image }}
+    env:
+      TZ: Asia/Shanghai
+      DEBIAN_FRONTEND: noninteractive
+
+    steps:
+      - name: Install git
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates curl tzdata
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mark workspace safe for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install build dependencies
+        run: |
+          apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build dpkg-dev file binutils \
+            qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite libqt6svg6
+
+      - name: Ensure CMake >= 3.28
+        run: |
+          CUR=$(cmake --version 2>/dev/null | sed -n '1s/^cmake version //p')
+          if [ -z "$CUR" ] || [ "$(printf '%s\n%s\n' "$CUR" "3.28.0" | sort -V | head -1)" != "3.28.0" ]; then
+            case "$(uname -m)" in
+              x86_64) CMAKE_ARCH=x86_64 ;;
+              aarch64|arm64) CMAKE_ARCH=aarch64 ;;
+              *) echo "不支持的架构: $(uname -m)" >&2; exit 1 ;;
+            esac
+            echo "当前 CMake ${CUR:-未安装}，安装 3.31.6"
+            curl -fsSL -o /tmp/cmake.tar.gz \
+              "https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-${CMAKE_ARCH}.tar.gz"
+            curl -fsSL -o /tmp/cmake-sha256.txt \
+              "https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-SHA-256.txt"
+            EXPECTED=$(grep "cmake-3.31.6-linux-${CMAKE_ARCH}.tar.gz" /tmp/cmake-sha256.txt | awk '{print $1}')
+            echo "${EXPECTED}  /tmp/cmake.tar.gz" | sha256sum -c -
+            tar -xzf /tmp/cmake.tar.gz -C /opt
+            echo "/opt/cmake-3.31.6-linux-${CMAKE_ARCH}/bin" >> "$GITHUB_PATH"
+          fi
+
       - name: Configure and build
-        if: steps.check.outputs.should_release == 'true' || inputs.force
         run: |
           cmake --preset release
           cmake --build --preset release
 
       - name: Test
-        if: steps.check.outputs.should_release == 'true' || inputs.force
         run: ctest --preset release --output-on-failure
 
       - name: Package
-        if: steps.check.outputs.should_release == 'true' || inputs.force
         env:
-          TM_DEB_RELEASE: ${{ steps.version.outputs.release }}
+          TM_DEB_RELEASE: ${{ needs.prepare.outputs.release }}
         run: bash packaging/build-deb.sh --skip-build
 
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-${{ matrix.name }}
+          path: build/packages/*.deb
+          if-no-files-found: error
+
+  release:
+    needs: [prepare, build]
+    if: (needs.prepare.outputs.should_release == 'true' || inputs.force) && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
       - name: Checksums
-        if: steps.check.outputs.should_release == 'true' || inputs.force
         run: |
-          cd build/packages
+          cd artifacts
           sha256sum *.deb > SHA256SUMS
 
       - name: Release notes
-        if: steps.check.outputs.should_release == 'true' || inputs.force
         env:
-          LAST_TAG: ${{ steps.check.outputs.last_tag }}
+          LAST_TAG: ${{ needs.prepare.outputs.last_tag }}
         run: |
           if [ "$LAST_TAG" = "none" ]; then
             COMMITS=$(git log --pretty='- %h %s' -20)
@@ -132,10 +202,11 @@ jobs:
           {
             echo "### 安装包"
             echo
-            echo '- `ubuntu26-trafficmonitor-linux_*.deb`：在线包，Qt 依赖由 apt 从软件源安装。'
-            echo '- `ubuntu26-trafficmonitor-linux-offline_*.deb`：离线包，已捆绑 Qt 运行库和插件，只依赖 `libc6`。'
+            echo '文件名以 `ubuntu22-`、`ubuntu24-`、`ubuntu26-`、`debian12-`、`debian13-` 开头，选择与目标系统对应的包。'
             echo
-            echo '包文件名以 `ubuntu26-` 这类系统标识开头，对应构建机的发行版。'
+            echo '- `*-trafficmonitor-linux_*.deb`：在线包，Qt 依赖由 apt 从软件源安装。'
+            echo '- `*-trafficmonitor-linux-offline_*.deb`：离线包，已捆绑 Qt 运行库和插件，只依赖 `libc6`。'
+            echo
             echo '使用 `SHA256SUMS` 校验下载文件。离线包要求目标机器的 glibc 不低于构建机。'
             echo
             echo "### 本次提交"
@@ -144,13 +215,12 @@ jobs:
           } > release-notes.md
 
       - name: Publish release
-        if: steps.check.outputs.should_release == 'true' || inputs.force
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: TrafficMonitor for Linux ${{ steps.version.outputs.release }}
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          name: TrafficMonitor for Linux ${{ needs.prepare.outputs.release }}
           target_commitish: ${{ github.sha }}
           body_path: release-notes.md
           files: |
-            build/packages/*.deb
-            build/packages/SHA256SUMS
+            artifacts/*.deb
+            artifacts/SHA256SUMS

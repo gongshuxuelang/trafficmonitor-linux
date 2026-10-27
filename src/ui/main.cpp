@@ -47,6 +47,16 @@ QString dataDirectory()
         + QStringLiteral("/") + QLatin1String(kAppName);
 }
 
+QString stateDirectory()
+{
+    // Qt 6.2/6.4 没有 QStandardPaths::GenericStateLocation，按 XDG 规范自行解析。
+    QString state_dir = qEnvironmentVariable("XDG_STATE_HOME");
+    if (state_dir.isEmpty() || !QDir::isAbsolutePath(state_dir)) {
+        state_dir = QDir::homePath() + QStringLiteral("/.local/state");
+    }
+    return state_dir + QStringLiteral("/") + QLatin1String(kAppName);
+}
+
 QString pluginDirectory()
 {
     const QString override_dir = qEnvironmentVariable("TRAFFICMONITOR_PLUGIN_DIR");
@@ -219,12 +229,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    QString state_dir =
-        QStandardPaths::writableLocation(QStandardPaths::GenericStateLocation);
-    if (state_dir.isEmpty()) {
-        state_dir = QDir::homePath() + QStringLiteral("/.local/state");
-    }
-    state_dir += QStringLiteral("/trafficmonitor-linux");
+    const QString state_dir = stateDirectory();
     QDir().mkpath(state_dir);
     Logger logger((state_dir + QStringLiteral("/app.log")).toStdString());
     qInfo() << "TrafficMonitor" << kVersion << "starting";

@@ -125,6 +125,7 @@ jobs:
         run: |
           apt-get install -y --no-install-recommends \
             build-essential cmake ninja-build dpkg-dev file binutils squashfs-tools \
+            libgl-dev libopengl-dev libegl-dev libgles-dev \
             qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite libqt6svg6
 
       - name: Ensure CMake >= 3.28
@@ -208,6 +209,7 @@ jobs:
         run: |
           dnf install -y --setopt=install_weak_deps=False \
             gcc-c++ cmake ninja-build rpm-build file binutils \
+            mesa-libGL-devel mesa-libEGL-devel mesa-libGLES-devel libglvnd-devel \
             qt6-qtbase-devel qt6-qtsvg-devel
 
       - name: Configure and build
@@ -255,7 +257,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          pacman -S --noconfirm --needed base-devel cmake ninja qt6-base qt6-svg
+          pacman -S --noconfirm --needed base-devel cmake ninja mesa libglvnd qt6-base qt6-svg
 
       - name: Configure and build
         run: |

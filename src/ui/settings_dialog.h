@@ -2,16 +2,15 @@
 
 #include <QDialog>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "tm/app_settings.h"
 
-class QCheckBox;
-class QComboBox;
-class QLineEdit;
-class QListWidget;
-class QSpinBox;
+namespace Ui {
+class SettingsDialog;
+}
 
 namespace tm_linux {
 
@@ -22,24 +21,13 @@ public:
     explicit SettingsDialog(const AppSettings& settings,
                             const std::vector<std::string>& plugin_item_ids,
                             QWidget* parent = nullptr);
+    ~SettingsDialog() override;
 
     AppSettings settings() const;
 
 private:
     AppSettings initial_;
-    std::vector<std::string> plugin_item_ids_;
-
-    QSpinBox* refresh_interval_{};
-    QSpinBox* opacity_{};
-    QCheckBox* always_on_top_{};
-    QCheckBox* locked_{};
-    QCheckBox* click_through_{};
-    QCheckBox* gpu_enabled_{};
-    QComboBox* network_interface_{};
-    QComboBox* unit_mode_{};
-    QComboBox* unit_base_{};
-    QLineEdit* disk_mount_point_{};
-    QListWidget* display_items_{};
+    std::unique_ptr<Ui::SettingsDialog> ui_;
 };
 
 } // namespace tm_linux

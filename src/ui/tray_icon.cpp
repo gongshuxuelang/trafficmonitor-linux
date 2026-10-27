@@ -1,4 +1,5 @@
 #include "ui/tray_icon.h"
+#include "ui_tray_icon.h"
 
 #include <QAction>
 #include <QIcon>
@@ -34,6 +35,7 @@ QIcon fallbackIcon()
 
 TrayIcon::TrayIcon(QObject* parent)
     : QObject(parent)
+    , ui_(std::make_unique<Ui::TrayMenu>())
 {
     QIcon icon = QIcon::fromTheme(QStringLiteral("utilities-system-monitor"));
     if (icon.isNull()) {
@@ -42,15 +44,11 @@ TrayIcon::TrayIcon(QObject* parent)
 
     tray_ = new QSystemTrayIcon(icon, this);
     menu_ = new QMenu();
+    ui_->setupUi(menu_);
 
-    auto* show_hide = menu_->addAction(QStringLiteral("显示/隐藏悬浮窗"));
-    auto* settings = menu_->addAction(QStringLiteral("设置"));
-    menu_->addSeparator();
-    auto* quit = menu_->addAction(QStringLiteral("退出"));
-
-    connect(show_hide, &QAction::triggered, this, &TrayIcon::showHideRequested);
-    connect(settings, &QAction::triggered, this, &TrayIcon::settingsRequested);
-    connect(quit, &QAction::triggered, this, &TrayIcon::quitRequested);
+    connect(ui_->action_show_hide, &QAction::triggered, this, &TrayIcon::showHideRequested);
+    connect(ui_->action_settings, &QAction::triggered, this, &TrayIcon::settingsRequested);
+    connect(ui_->action_quit, &QAction::triggered, this, &TrayIcon::quitRequested);
 
     tray_->setContextMenu(menu_);
     tray_->setToolTip(QStringLiteral("TrafficMonitor"));

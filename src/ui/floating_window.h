@@ -4,11 +4,16 @@
 #include <QStringList>
 #include <QWidget>
 
+#include <memory>
 #include <vector>
 
 #include "tm/app_settings.h"
 #include "tm/metrics.h"
 #include "tm/plugin_host.h"
+
+namespace Ui {
+class FloatingWindow;
+}
 
 namespace tm_linux {
 
@@ -17,6 +22,7 @@ class FloatingWindow : public QWidget {
 
 public:
     explicit FloatingWindow(QWidget* parent = nullptr);
+    ~FloatingWindow() override;
 
     void setSettings(const AppSettings& settings);
     void setSnapshot(const Snapshot& snapshot);
@@ -48,6 +54,7 @@ private:
     QStringList lines_;
     QPoint drag_offset_;
     bool dragging_{};
+    std::unique_ptr<Ui::FloatingWindow> ui_;
 };
 
 } // namespace tm_linux

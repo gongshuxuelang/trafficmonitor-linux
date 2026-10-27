@@ -142,8 +142,11 @@ set_target_properties(gpu_plugin PROPERTIES
 add_executable(trafficmonitor-linux
     src/ui/main.cpp
     src/ui/floating_window.cpp
+    src/ui/floating_window.ui
     src/ui/settings_dialog.cpp
+    src/ui/settings_dialog.ui
     src/ui/tray_icon.cpp
+    src/ui/tray_icon.ui
 )
 target_include_directories(trafficmonitor-linux PRIVATE include src)
 target_link_libraries(trafficmonitor-linux PRIVATE
@@ -183,6 +186,7 @@ target_link_libraries(test_app_settings PRIVATE tm_core Qt6::Test)
 add_executable(test_floating_window
     tests/unit/test_floating_window.cpp
     src/ui/floating_window.cpp
+    src/ui/floating_window.ui
 )
 target_include_directories(test_floating_window PRIVATE include src)
 target_link_libraries(test_floating_window PRIVATE tm_core Qt6::Widgets Qt6::Test)
@@ -195,6 +199,7 @@ target_link_libraries(test_sampler PRIVATE tm_core Qt6::Test)
 add_executable(test_settings_dialog
     tests/unit/test_settings_dialog.cpp
     src/ui/settings_dialog.cpp
+    src/ui/settings_dialog.ui
 )
 target_include_directories(test_settings_dialog PRIVATE include src)
 target_link_libraries(test_settings_dialog PRIVATE tm_core Qt6::Widgets Qt6::Test)
@@ -202,6 +207,7 @@ target_link_libraries(test_settings_dialog PRIVATE tm_core Qt6::Widgets Qt6::Tes
 add_executable(test_tray_icon
     tests/unit/test_tray_icon.cpp
     src/ui/tray_icon.cpp
+    src/ui/tray_icon.ui
 )
 target_include_directories(test_tray_icon PRIVATE include src)
 target_link_libraries(test_tray_icon PRIVATE tm_core Qt6::Widgets Qt6::Test)

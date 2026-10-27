@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsDialog</class>
+ <widget class="QDialog" name="SettingsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>440</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>TrafficMonitor 设置</string>
+  </property>
+  <layout class="QVBoxLayout" name="main_layout">
+   <item>
+    <layout class="QFormLayout" name="form_layout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_refresh_interval">
+       <property name="text">
+        <string>刷新间隔</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="refresh_interval">
+       <property name="minimum">
+        <number>200</number>
+       </property>
+       <property name="maximum">
+        <number>5000</number>
+       </property>
+       <property name="suffix">
+        <string> ms</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_opacity">
+       <property name="text">
+        <string>不透明度</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="opacity">
+       <property name="minimum">
+        <number>20</number>
+       </property>
+       <property name="maximum">
+        <number>100</number>
+       </property>
+       <property name="suffix">
+        <string> %</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="always_on_top">
+       <property name="text">
+        <string>总是置顶</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QCheckBox" name="locked">
+       <property name="text">
+        <string>锁定位置</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QCheckBox" name="click_through">
+       <property name="text">
+        <string>鼠标穿透</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_network_interface">
+       <property name="text">
+        <string>网络接口</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QComboBox" name="network_interface">
+       <item>
+        <property name="text">
+         <string>自动</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_disk_mount_point">
+       <property name="text">
+        <string>磁盘挂载点</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="disk_mount_point"/>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_unit_mode">
+       <property name="text">
+        <string>网速单位</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QComboBox" name="unit_mode">
+       <item>
+        <property name="text">
+         <string>自动</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>KB/s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>MB/s</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="label_unit_base">
+       <property name="text">
+        <string>字节/比特</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QComboBox" name="unit_base">
+       <item>
+        <property name="text">
+         <string>字节 (B)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>比特 (b)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="9" column="1">
+      <widget class="QCheckBox" name="gpu_enabled">
+       <property name="text">
+        <string>启用 GPU 插件</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="items_label">
+     <property name="text">
+      <string>显示项目</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QListWidget" name="display_items"/>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="button_box">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

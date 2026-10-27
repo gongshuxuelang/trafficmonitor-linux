@@ -1,19 +1,15 @@
 #include "ui/settings_dialog.h"
+#include "ui_settings_dialog.h"
 
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDir>
-#include <QFormLayout>
-#include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QListWidgetItem>
-#include <QPushButton>
 #include <QSpinBox>
-#include <QVBoxLayout>
 
-#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -55,174 +51,96 @@ SettingsDialog::SettingsDialog(const AppSettings& settings,
                                const std::vector<std::string>& plugin_item_ids, QWidget* parent)
     : QDialog(parent)
     , initial_(settings)
-    , plugin_item_ids_(plugin_item_ids)
+    , ui_(std::make_unique<Ui::SettingsDialog>())
 {
-    setWindowTitle(QStringLiteral("TrafficMonitor 设置"));
-    resize(440, 560);
+    ui_->setupUi(this);
 
-    auto* layout = new QVBoxLayout(this);
-    auto* form = new QFormLayout();
+    ui_->refresh_interval->setValue(initial_.refresh_interval_ms);
+    ui_->opacity->setValue(initial_.opacity);
+    ui_->always_on_top->setChecked(initial_.always_on_top);
+    ui_->locked->setChecked(initial_.locked);
+    ui_->click_through->setChecked(initial_.click_through);
 
-    refresh_interval_ = new QSpinBox(this);
-    refresh_interval_->setObjectName(QStringLiteral("refresh_interval"));
-    refresh_interval_->setRange(200, 5000);
-    refresh_interval_->setSuffix(QStringLiteral(" ms"));
-    refresh_interval_->setValue(initial_.refresh_interval_ms);
-    form->addRow(QStringLiteral("刷新间隔"), refresh_interval_);
-
-    opacity_ = new QSpinBox(this);
-    opacity_->setObjectName(QStringLiteral("opacity"));
-    opacity_->setRange(20, 100);
-    opacity_->setSuffix(QStringLiteral(" %"));
-    opacity_->setValue(initial_.opacity);
-    form->addRow(QStringLiteral("不透明度"), opacity_);
-
-    always_on_top_ = new QCheckBox(QStringLiteral("总是置顶"), this);
-    always_on_top_->setObjectName(QStringLiteral("always_on_top"));
-    always_on_top_->setChecked(initial_.always_on_top);
-    form->addRow(QString(), always_on_top_);
-
-    locked_ = new QCheckBox(QStringLiteral("锁定位置"), this);
-    locked_->setObjectName(QStringLiteral("locked"));
-    locked_->setChecked(initial_.locked);
-    form->addRow(QString(), locked_);
-
-    click_through_ = new QCheckBox(QStringLiteral("鼠标穿透"), this);
-    click_through_->setObjectName(QStringLiteral("click_through"));
-    click_through_->setChecked(initial_.click_through);
-    form->addRow(QString(), click_through_);
-
-    network_interface_ = new QComboBox(this);
-    network_interface_->setObjectName(QStringLiteral("network_interface"));
-    network_interface_->addItem(QStringLiteral("自动"), QStringLiteral("auto"));
+    // uic 不会把 QComboBox 项的 userData 写进生成的代码，这里补上“自动”的取值。
+    ui_->network_interface->setItemData(0, QStringLiteral("auto"));
     for (const QString& interface : networkInterfaces()) {
-        network_interface_->addItem(interface, interface);
+        ui_->network_interface->addItem(interface, interface);
     }
     int network_index =
-        network_interface_->findData(QString::fromStdString(initial_.network_interface));
+        ui_->network_interface->findData(QString::fromStdString(initial_.network_interface));
     if (network_index < 0) {
-        network_interface_->addItem(QString::fromStdString(initial_.network_interface),
-                                    QString::fromStdString(initial_.network_interface));
-        network_index = network_interface_->count() - 1;
+        ui_->network_interface->addItem(QString::fromStdString(initial_.network_interface),
+                                        QString::fromStdString(initial_.network_interface));
+        network_index = ui_->network_interface->count() - 1;
     }
-    network_interface_->setCurrentIndex(network_index);
-    form->addRow(QStringLiteral("网络接口"), network_interface_);
+    ui_->network_interface->setCurrentIndex(network_index);
 
-    disk_mount_point_ = new QLineEdit(QString::fromStdString(initial_.disk_mount_point), this);
-    disk_mount_point_->setObjectName(QStringLiteral("disk_mount_point"));
-    form->addRow(QStringLiteral("磁盘挂载点"), disk_mount_point_);
+    ui_->disk_mount_point->setText(QString::fromStdString(initial_.disk_mount_point));
+    ui_->unit_mode->setCurrentIndex(static_cast<int>(initial_.unit_mode));
+    ui_->unit_base->setCurrentIndex(initial_.unit_base == UnitBase::Bit ? 1 : 0);
+    ui_->gpu_enabled->setChecked(initial_.gpu_enabled);
 
-    unit_mode_ = new QComboBox(this);
-    unit_mode_->setObjectName(QStringLiteral("unit_mode"));
-    unit_mode_->addItem(QStringLiteral("自动"), 0);
-    unit_mode_->addItem(QStringLiteral("KB/s"), 1);
-    unit_mode_->addItem(QStringLiteral("MB/s"), 2);
-    unit_mode_->setCurrentIndex(static_cast<int>(initial_.unit_mode));
-    form->addRow(QStringLiteral("网速单位"), unit_mode_);
-
-    unit_base_ = new QComboBox(this);
-    unit_base_->setObjectName(QStringLiteral("unit_base"));
-    unit_base_->addItem(QStringLiteral("字节 (B)"), 0);
-    unit_base_->addItem(QStringLiteral("比特 (b)"), 1);
-    unit_base_->setCurrentIndex(initial_.unit_base == UnitBase::Bit ? 1 : 0);
-    form->addRow(QStringLiteral("字节/比特"), unit_base_);
-
-    gpu_enabled_ = new QCheckBox(QStringLiteral("启用 GPU 插件"), this);
-    gpu_enabled_->setObjectName(QStringLiteral("gpu_enabled"));
-    gpu_enabled_->setChecked(initial_.gpu_enabled);
-    form->addRow(QString(), gpu_enabled_);
-
-    layout->addLayout(form);
-
-    auto* items_label = new QLabel(QStringLiteral("显示项目"), this);
-    layout->addWidget(items_label);
-
-    display_items_ = new QListWidget(this);
-    display_items_->setObjectName(QStringLiteral("display_items"));
     std::set<std::string> seen;
     for (const auto& item : initial_.display_items) {
         seen.insert(item.id);
-        auto* list_item = new QListWidgetItem(itemLabel(item.id), display_items_);
+        auto* list_item = new QListWidgetItem(itemLabel(item.id), ui_->display_items);
         list_item->setFlags(list_item->flags() | Qt::ItemIsUserCheckable);
         list_item->setData(Qt::UserRole, QString::fromStdString(item.id));
         list_item->setCheckState(item.visible ? Qt::Checked : Qt::Unchecked);
     }
-    for (const auto& id : plugin_item_ids_) {
+    for (const auto& id : plugin_item_ids) {
         if (!seen.insert(id).second) {
             continue;
         }
-        auto* list_item = new QListWidgetItem(itemLabel(id), display_items_);
+        auto* list_item = new QListWidgetItem(itemLabel(id), ui_->display_items);
         list_item->setFlags(list_item->flags() | Qt::ItemIsUserCheckable);
         list_item->setData(Qt::UserRole, QString::fromStdString(id));
         list_item->setCheckState(Qt::Checked);
     }
-    layout->addWidget(display_items_, 1);
 
-    auto* buttons =
-        new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-    layout->addWidget(buttons);
+    ui_->main_layout->setStretch(2, 1);
+
+    connect(ui_->button_box, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(ui_->button_box, &QDialogButtonBox::rejected, this, &QDialog::reject);
 }
+
+SettingsDialog::~SettingsDialog() = default;
 
 AppSettings SettingsDialog::settings() const
 {
     AppSettings result = initial_;
 
-    if (refresh_interval_ != nullptr) {
-        result.refresh_interval_ms = refresh_interval_->value();
+    result.refresh_interval_ms = ui_->refresh_interval->value();
+    result.opacity = ui_->opacity->value();
+    result.always_on_top = ui_->always_on_top->isChecked();
+    result.locked = ui_->locked->isChecked();
+    result.click_through = ui_->click_through->isChecked();
+    result.network_interface = ui_->network_interface->currentData().toString().toStdString();
+    result.disk_mount_point = ui_->disk_mount_point->text().toStdString();
+    switch (ui_->unit_mode->currentIndex()) {
+    case 1:
+        result.unit_mode = UnitMode::Kb;
+        break;
+    case 2:
+        result.unit_mode = UnitMode::Mb;
+        break;
+    default:
+        result.unit_mode = UnitMode::Auto;
+        break;
     }
-    if (opacity_ != nullptr) {
-        result.opacity = opacity_->value();
-    }
-    if (always_on_top_ != nullptr) {
-        result.always_on_top = always_on_top_->isChecked();
-    }
-    if (locked_ != nullptr) {
-        result.locked = locked_->isChecked();
-    }
-    if (click_through_ != nullptr) {
-        result.click_through = click_through_->isChecked();
-    }
-    if (network_interface_ != nullptr) {
-        result.network_interface = network_interface_->currentData().toString().toStdString();
-    }
-    if (disk_mount_point_ != nullptr) {
-        result.disk_mount_point = disk_mount_point_->text().toStdString();
-    }
-    if (unit_mode_ != nullptr) {
-        switch (unit_mode_->currentData().toInt()) {
-        case 1:
-            result.unit_mode = UnitMode::Kb;
-            break;
-        case 2:
-            result.unit_mode = UnitMode::Mb;
-            break;
-        default:
-            result.unit_mode = UnitMode::Auto;
-            break;
+    result.unit_base = ui_->unit_base->currentIndex() == 1 ? UnitBase::Bit : UnitBase::Byte;
+    result.gpu_enabled = ui_->gpu_enabled->isChecked();
+
+    std::vector<DisplayItemSetting> items;
+    for (int index = 0; index < ui_->display_items->count(); ++index) {
+        const QListWidgetItem* item = ui_->display_items->item(index);
+        const std::string id = item->data(Qt::UserRole).toString().toStdString();
+        if (!id.empty()) {
+            items.push_back(DisplayItemSetting{id, item->checkState() == Qt::Checked});
         }
     }
-    if (unit_base_ != nullptr) {
-        result.unit_base =
-            unit_base_->currentData().toInt() == 1 ? UnitBase::Bit : UnitBase::Byte;
-    }
-    if (gpu_enabled_ != nullptr) {
-        result.gpu_enabled = gpu_enabled_->isChecked();
-    }
-    if (display_items_ != nullptr) {
-        std::vector<DisplayItemSetting> items;
-        for (int index = 0; index < display_items_->count(); ++index) {
-            const QListWidgetItem* item = display_items_->item(index);
-            const std::string id = item->data(Qt::UserRole).toString().toStdString();
-            if (!id.empty()) {
-                items.push_back(
-                    DisplayItemSetting{id, item->checkState() == Qt::Checked});
-            }
-        }
-        if (!items.empty()) {
-            result.display_items = std::move(items);
-        }
+    if (!items.empty()) {
+        result.display_items = std::move(items);
     }
 
     return result;

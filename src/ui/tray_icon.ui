@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TrayMenu</class>
+ <widget class="QMenu" name="tray_menu">
+  <action name="action_show_hide">
+   <property name="text">
+    <string>显示/隐藏悬浮窗</string>
+   </property>
+  </action>
+  <action name="action_settings">
+   <property name="text">
+    <string>设置</string>
+   </property>
+  </action>
+  <action name="action_quit">
+   <property name="text">
+    <string>退出</string>
+   </property>
+  </action>
+  <addaction name="action_show_hide"/>
+  <addaction name="action_settings"/>
+  <addaction name="separator"/>
+  <addaction name="action_quit"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

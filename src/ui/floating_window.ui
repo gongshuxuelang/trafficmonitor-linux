@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FloatingWindow</class>
+ <widget class="QWidget" name="FloatingWindow">
+  <property name="windowTitle">
+   <string>TrafficMonitor</string>
+  </property>
+  <widget class="QMenu" name="context_menu">
+   <action name="action_settings">
+    <property name="text">
+     <string>设置</string>
+    </property>
+   </action>
+   <action name="action_locked">
+    <property name="text">
+     <string>锁定位置</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+   </action>
+   <action name="action_click_through">
+    <property name="text">
+     <string>鼠标穿透</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+   </action>
+   <action name="action_always_on_top">
+    <property name="text">
+     <string>总是置顶</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+   </action>
+   <action name="action_quit">
+    <property name="text">
+     <string>退出</string>
+    </property>
+   </action>
+   <addaction name="action_settings"/>
+   <addaction name="separator"/>
+   <addaction name="action_locked"/>
+   <addaction name="action_click_through"/>
+   <addaction name="action_always_on_top"/>
+   <addaction name="separator"/>
+   <addaction name="action_quit"/>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

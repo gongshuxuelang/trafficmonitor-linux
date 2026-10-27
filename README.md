@@ -119,7 +119,7 @@ const TMPluginV1* tm_plugin_get_instance(uint32_t host_api_version);
 - `include/tm/`：core 数据模型、采集器、存储、设置、采样线程
 - `include/tm_plugin_api.h`：稳定 C ABI
 - `src/core/`：采集、SQLite、插件宿主、采样
-- `src/ui/`：悬浮窗、托盘、设置对话框、主程序
+- `src/ui/`：悬浮窗、托盘、设置对话框（Qt Designer `.ui` 表单）、主程序
 - `plugins/gpu/`：NVIDIA GPU 插件
 - `tests/unit/`：Qt Test 单元与集成测试
 - `packaging/`：deb 桌面文件与 XWayland 启动 wrapper

@@ -1,4 +1,5 @@
 #include "ui/floating_window.h"
+#include "ui_floating_window.h"
 
 #include <QAction>
 #include <QContextMenuEvent>
@@ -23,15 +24,19 @@ QString toQString(const std::string& value)
 
 FloatingWindow::FloatingWindow(QWidget* parent)
     : QWidget(parent)
+    , ui_(std::make_unique<Ui::FloatingWindow>())
 {
+    ui_->setupUi(this);
+
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_ShowWithoutActivating);
-    setWindowTitle(QStringLiteral("TrafficMonitor"));
 
     settings_ = AppSettings::defaults();
     resize(settings_.geometry.width, settings_.geometry.height);
 }
+
+FloatingWindow::~FloatingWindow() = default;
 
 void FloatingWindow::setSettings(const AppSettings& settings)
 {
@@ -152,51 +157,35 @@ void FloatingWindow::mouseReleaseEvent(QMouseEvent* event)
 
 void FloatingWindow::contextMenuEvent(QContextMenuEvent* event)
 {
-    QMenu menu(this);
+    ui_->action_locked->setChecked(settings_.locked);
+    ui_->action_click_through->setChecked(settings_.click_through);
+    ui_->action_always_on_top->setChecked(settings_.always_on_top);
 
-    QAction* settings_action = menu.addAction(QStringLiteral("设置"));
-    menu.addSeparator();
-
-    QAction* lock_action = menu.addAction(QStringLiteral("锁定位置"));
-    lock_action->setCheckable(true);
-    lock_action->setChecked(settings_.locked);
-
-    QAction* click_through_action = menu.addAction(QStringLiteral("鼠标穿透"));
-    click_through_action->setCheckable(true);
-    click_through_action->setChecked(settings_.click_through);
-
-    QAction* always_on_top_action = menu.addAction(QStringLiteral("总是置顶"));
-    always_on_top_action->setCheckable(true);
-    always_on_top_action->setChecked(settings_.always_on_top);
-
-    menu.addSeparator();
-    QAction* quit_action = menu.addAction(QStringLiteral("退出"));
-
-    QAction* chosen = menu.exec(event->globalPos());
-    if (chosen == settings_action) {
+    QAction* chosen = ui_->context_menu->exec(event->globalPos());
+    if (chosen == ui_->action_settings) {
         emit settingsRequested();
         return;
     }
-    if (chosen == lock_action) {
-        settings_.locked = lock_action->isChecked();
+    if (chosen == ui_->action_locked) {
+        settings_.locked = ui_->action_locked->isChecked();
         setAttribute(Qt::WA_TransparentForMouseEvents, settings_.click_through);
         emit settingsChanged();
         return;
     }
-    if (chosen == click_through_action) {
-        settings_.click_through = click_through_action->isChecked();
+    if (chosen == ui_->action_click_through) {
+        settings_.click_through = ui_->action_click_through->isChecked();
         setAttribute(Qt::WA_TransparentForMouseEvents, settings_.click_through);
         emit settingsChanged();
         return;
     }
-    if (chosen == always_on_top_action) {
-        settings_.always_on_top = always_on_top_action->isChecked();
+    if (chosen == ui_->action_always_on_top) {
+        settings_.always_on_top = ui_->action_always_on_top->isChecked();
         setWindowFlag(Qt::WindowStaysOnTopHint, settings_.always_on_top);
         show();
         emit settingsChanged();
         return;
     }
-    if (chosen == quit_action) {
+    if (chosen == ui_->action_quit) {
         emit quitRequested();
     }
 }

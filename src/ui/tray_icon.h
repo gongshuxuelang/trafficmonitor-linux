@@ -3,8 +3,14 @@
 #include <QObject>
 #include <QString>
 
+#include <memory>
+
 class QMenu;
 class QSystemTrayIcon;
+
+namespace Ui {
+class TrayMenu;
+}
 
 namespace tm_linux {
 
@@ -29,6 +35,7 @@ signals:
 private:
     QSystemTrayIcon* tray_{};
     QMenu* menu_{};
+    std::unique_ptr<Ui::TrayMenu> ui_;
 };
 
 } // namespace tm_linux

@@ -55,5 +55,16 @@
         "outputOnFailure": true
       }
     }
+  ],
+  "packagePresets": [
+    {
+      "name": "deb",
+      "displayName": "Debian package",
+      "description": "Build the .deb package with CPack",
+      "configurePreset": "release",
+      "generators": [
+        "DEB"
+      ]
+    }
   ]
 }

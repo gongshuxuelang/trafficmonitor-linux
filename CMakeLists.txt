@@ -21,6 +21,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(-pipe)
 endif()
 
+# 安装目录固定为 755，避免受打包用户 umask 影响生成 775 的包内目录。
+set(CMAKE_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS
+    OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    GROUP_READ GROUP_EXECUTE
+    WORLD_READ WORLD_EXECUTE
+)
+
 option(TM_USE_CCACHE "Use ccache as compiler launcher when available" ON)
 if(TM_USE_CCACHE)
     find_program(TM_CCACHE_EXECUTABLE ccache)
@@ -251,3 +258,33 @@ install(TARGETS trafficmonitor-linux RUNTIME DESTINATION bin)
 install(TARGETS gpu_plugin LIBRARY DESTINATION lib/trafficmonitor-linux/plugins)
 install(PROGRAMS packaging/trafficmonitor-linux-wrapper DESTINATION bin)
 install(FILES packaging/deb/trafficmonitor-linux.desktop DESTINATION share/applications)
+
+# ---- Debian 打包：cmake --preset release && cpack --preset deb ----
+option(TM_DEB_SHLIBDEPS "Use dpkg-shlibdeps to compute Debian dependencies" ON)
+
+set(CPACK_PACKAGE_NAME "trafficmonitor-linux")
+set(CPACK_PACKAGE_VENDOR "TrafficMonitor for Linux contributors")
+set(CPACK_PACKAGE_CONTACT "TrafficMonitor for Linux contributors")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+    "Always-on-top network, CPU, memory and GPU monitor")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_NAME "trafficmonitor-linux")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_CONTACT}")
+set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_RELEASE "1")
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+
+if(TM_DEB_SHLIBDEPS)
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+    # SQLite 驱动是运行时加载的 Qt 插件，dpkg-shlibdeps 扫描不到，需要手动补。
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt6sql6-sqlite")
+else()
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS
+        "libc6 (>= 2.39), libqt6widgets6 (>= 6.5), libqt6sql6-sqlite, libqt6network6")
+endif()
+
+include(CPack)

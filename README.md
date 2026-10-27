@@ -67,6 +67,75 @@ cmake --build --preset release
 `build/release/plugins/gpu_plugin.so.debug`，gdb 会在同目录自动加载它们。
 不需要拆分时配置 `-DTM_SEPARATE_DEBUG_SYMBOLS=OFF`。
 
+## 打包 deb
+
+一次生成在线包和离线包：
+
+```bash
+./packaging/build-deb.sh
+```
+
+产物在 `build/packages/`：
+
+- `trafficmonitor-linux_0.1.0-1_amd64.deb`：在线包，Qt/glibc 依赖由 apt 从软件源安装。
+- `trafficmonitor-linux-offline_0.1.0-1_amd64.deb`：离线包，捆绑 Qt 运行库、平台/图片/SQLite 插件及其依赖，只依赖 `libc6`。两个包冲突，不能同时安装。
+
+安装：
+
+```bash
+sudo apt install ./build/packages/trafficmonitor-linux_0.1.0-1_amd64.deb
+# 或
+sudo apt install ./build/packages/trafficmonitor-linux-offline_0.1.0-1_amd64.deb
+```
+
+包内路径：
+
+- `/usr/bin/trafficmonitor-linux`
+- `/usr/bin/trafficmonitor-linux-wrapper`
+- `/usr/lib/trafficmonitor-linux/plugins/gpu_plugin.so`
+- `/usr/lib/trafficmonitor-linux/lib/`（仅离线包：Qt 运行库）
+- `/usr/lib/trafficmonitor-linux/qt-plugins/`（仅离线包：Qt 插件）
+- `/usr/share/applications/trafficmonitor-linux.desktop`
+
+脚本先执行 `cmake --preset release` 和构建，再用 CPack 生成在线包，最后用
+`cmake --install` 加 `dpkg-deb` 组装离线包。已有 Release 构建时加 `--skip-build`。
+CI 可以用 `TM_DEB_RELEASE` 覆盖 Debian revision，例如
+`TM_DEB_RELEASE=20261027.abc1234` 生成 `0.1.0-20261027.abc1234`。
+
+只生成在线包也可以直接用 CPack：
+
+```bash
+cmake --preset release
+cmake --build --preset release
+cpack --preset deb
+```
+
+依赖默认由 `dpkg-shlibdeps` 自动计算，需要安装 `dpkg-dev`。没有时用
+`-DTM_DEB_SHLIBDEPS=OFF` 配置，改用 CMake 中手写的依赖列表（与 `packaging/deb/control` 一致）。
+
+离线包的限制：
+
+- 不捆绑 glibc，`Depends` 按构建机实际需要的最高 GLIBC 版本生成，目标机器需要相同或更新的 glibc。
+- 不捆绑 NVIDIA 驱动库 `libnvidia-ml.so.1`，缺失时 GPU 数值显示 `--`。
+- 通过 `trafficmonitor-linux-wrapper` 启动时会自动设置 `LD_LIBRARY_PATH` 和 `QT_PLUGIN_PATH`，桌面图标和命令行都应使用该 wrapper。
+- 包内含 Qt 动态库，分发时需遵守 LGPL 要求。
+
+## 自动发布
+
+`.github/workflows/daily-release.yml` 每天北京时间 05:00 检查默认分支是否有新提交：
+
+- 没有新提交：跳过。
+- 有新提交：构建、跑测试、生成两个 `.deb`，创建 `v<版本>-<日期>.<短SHA>` 标签并发布 GitHub Release。
+- 也可以在 Actions 页面手动运行，勾选 `force` 可以忽略“无新提交”检查。
+
+版本号格式为 `0.1.0-20261027.abc1234`：`0.1.0` 取 `CMakeLists.txt` 的
+`project(... VERSION ...)` 和最近 `v*` 标签前缀中较大的一个；`20261027` 是北京时间日期；
+`abc1234` 是发布提交的短 SHA。同一天多次发布用 SHA 区分。
+需要里程碑版本时，改 `CMakeLists.txt` 的版本号或打 `v1.0.0` 标签都可以，后续每日包会自动使用更大的前缀。
+
+Release 附件包含在线包、离线包和 `SHA256SUMS`。流水线在 `ubuntu:26.04` 容器里构建，
+匹配 Qt 6.10 和 glibc 2.43。工作流文件需要提交到默认分支，定时任务才会生效。
+
 ## 运行
 
 ```bash

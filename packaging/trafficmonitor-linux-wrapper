@@ -11,4 +11,13 @@ if [ -z "${TRAFFICMONITOR_PLUGIN_DIR:-}" ] && [ -d /usr/lib/trafficmonitor-linux
     export TRAFFICMONITOR_PLUGIN_DIR=/usr/lib/trafficmonitor-linux/plugins
 fi
 
+# 离线包会带这些目录；在线包没有，判断后跳过。
+if [ -d /usr/lib/trafficmonitor-linux/lib ]; then
+    export LD_LIBRARY_PATH="/usr/lib/trafficmonitor-linux/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
+if [ -d /usr/lib/trafficmonitor-linux/qt-plugins ]; then
+    export QT_PLUGIN_PATH="/usr/lib/trafficmonitor-linux/qt-plugins${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
+    export QT_QPA_PLATFORM_PLUGIN_PATH=/usr/lib/trafficmonitor-linux/qt-plugins/platforms
+fi
+
 exec trafficmonitor-linux "$@"

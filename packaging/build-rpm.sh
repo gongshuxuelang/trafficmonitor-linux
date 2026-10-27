@@ -80,7 +80,7 @@ fi
 mkdir -p "$OUT_DIR"
 
 echo "==> 在线包"
-(cd "$ROOT" && cpack -G RPM \
+(cd "$BUILD_DIR" && cpack -G RPM \
     -D "CPACK_RPM_PACKAGE_RELEASE=${RPM_RELEASE}" \
     -D "CPACK_RPM_PACKAGE_LICENSE=${RPM_LICENSE}" \
     -D "CPACK_RPM_FILE_NAME=${ONLINE_NAME}")

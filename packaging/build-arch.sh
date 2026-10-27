@@ -106,6 +106,10 @@ build_package() {
         find "$stage" -type d -exec chmod 755 {} +
     fi
 
+    # makepkg 以 builder 用户运行，stage 需要可读可进入
+    chmod 755 "$stage"
+    chmod -R a+rX "$stage"
+
     write_pkgbuild "$name" "$stage" "$depends" "$conflicts" "$work"
     run_makepkg "$work"
 

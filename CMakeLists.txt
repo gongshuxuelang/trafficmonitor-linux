@@ -80,58 +80,58 @@ add_library(tm_core STATIC
     src/core/sampler.cpp
     src/core/logger.cpp
 )
-target_include_directories(tm_core PUBLIC include)
+target_include_directories(tm_core PUBLIC src/include)
 target_link_libraries(tm_core PUBLIC Qt6::Core Qt6::Sql ${CMAKE_DL_LIBS})
 
 add_executable(tm_tests
-    tests/unit/test_network_collector.cpp
+    src/tests/unit/test_network_collector.cpp
 )
 target_link_libraries(tm_tests PRIVATE tm_core Qt6::Test)
 
 add_executable(test_cpu_collector
-    tests/unit/test_cpu_collector.cpp
+    src/tests/unit/test_cpu_collector.cpp
 )
 target_link_libraries(test_cpu_collector PRIVATE tm_core Qt6::Test)
 
 add_executable(test_memory_collector
-    tests/unit/test_memory_collector.cpp
+    src/tests/unit/test_memory_collector.cpp
 )
 target_link_libraries(test_memory_collector PRIVATE tm_core Qt6::Test)
 
 add_executable(test_disk_collector
-    tests/unit/test_disk_collector.cpp
+    src/tests/unit/test_disk_collector.cpp
 )
 target_link_libraries(test_disk_collector PRIVATE tm_core Qt6::Test)
 
 add_executable(test_temperature_collector
-    tests/unit/test_temperature_collector.cpp
+    src/tests/unit/test_temperature_collector.cpp
 )
 target_link_libraries(test_temperature_collector PRIVATE tm_core Qt6::Test)
 
 add_executable(test_cpu_frequency_collector
-    tests/unit/test_cpu_frequency_collector.cpp
+    src/tests/unit/test_cpu_frequency_collector.cpp
 )
 target_link_libraries(test_cpu_frequency_collector PRIVATE tm_core Qt6::Test)
 
 add_executable(test_system_metrics
-    tests/unit/test_system_metrics.cpp
+    src/tests/unit/test_system_metrics.cpp
 )
 target_link_libraries(test_system_metrics PRIVATE tm_core Qt6::Test)
 
 add_executable(test_storage
-    tests/unit/test_storage.cpp
+    src/tests/unit/test_storage.cpp
 )
 target_link_libraries(test_storage PRIVATE tm_core Qt6::Test)
 
-add_library(test_plugin MODULE tests/plugins/test_plugin.cpp)
-target_include_directories(test_plugin PRIVATE include)
+add_library(test_plugin MODULE src/tests/plugins/test_plugin.cpp)
+target_include_directories(test_plugin PRIVATE src/include)
 set_target_properties(test_plugin PROPERTIES PREFIX "" OUTPUT_NAME "test_plugin")
 
-add_library(empty_plugin MODULE tests/plugins/empty_plugin.cpp)
+add_library(empty_plugin MODULE src/tests/plugins/empty_plugin.cpp)
 set_target_properties(empty_plugin PROPERTIES PREFIX "" OUTPUT_NAME "empty_plugin")
 
-add_library(gpu_plugin MODULE plugins/gpu/gpu_plugin.cpp)
-target_include_directories(gpu_plugin PRIVATE include)
+add_library(gpu_plugin MODULE src/plugins/gpu/gpu_plugin.cpp)
+target_include_directories(gpu_plugin PRIVATE src/include)
 target_link_libraries(gpu_plugin PRIVATE ${CMAKE_DL_LIBS})
 set_target_properties(gpu_plugin PROPERTIES
     PREFIX ""
@@ -148,7 +148,7 @@ add_executable(trafficmonitor-linux
     src/ui/tray_icon.cpp
     src/ui/tray_icon.ui
 )
-target_include_directories(trafficmonitor-linux PRIVATE include src)
+target_include_directories(trafficmonitor-linux PRIVATE src/include src)
 target_link_libraries(trafficmonitor-linux PRIVATE
     tm_core
     Qt6::Widgets
@@ -157,7 +157,7 @@ target_link_libraries(trafficmonitor-linux PRIVATE
 add_dependencies(trafficmonitor-linux gpu_plugin)
 
 add_executable(test_plugin_host
-    tests/unit/test_plugin_host.cpp
+    src/tests/unit/test_plugin_host.cpp
 )
 target_link_libraries(test_plugin_host PRIVATE tm_core Qt6::Test)
 target_compile_definitions(test_plugin_host PRIVATE
@@ -167,53 +167,53 @@ target_compile_definitions(test_plugin_host PRIVATE
 add_dependencies(test_plugin_host test_plugin empty_plugin)
 
 add_executable(test_gpu_plugin
-    tests/unit/test_gpu_plugin.cpp
+    src/tests/unit/test_gpu_plugin.cpp
 )
 target_link_libraries(test_gpu_plugin PRIVATE tm_core Qt6::Test)
 target_compile_definitions(test_gpu_plugin PRIVATE GPU_PLUGIN_PATH="$<TARGET_FILE:gpu_plugin>")
 add_dependencies(test_gpu_plugin gpu_plugin)
 
 add_executable(test_formatting
-    tests/unit/test_formatting.cpp
+    src/tests/unit/test_formatting.cpp
 )
 target_link_libraries(test_formatting PRIVATE tm_core Qt6::Test)
 
 add_executable(test_app_settings
-    tests/unit/test_app_settings.cpp
+    src/tests/unit/test_app_settings.cpp
 )
 target_link_libraries(test_app_settings PRIVATE tm_core Qt6::Test)
 
 add_executable(test_floating_window
-    tests/unit/test_floating_window.cpp
+    src/tests/unit/test_floating_window.cpp
     src/ui/floating_window.cpp
     src/ui/floating_window.ui
 )
-target_include_directories(test_floating_window PRIVATE include src)
+target_include_directories(test_floating_window PRIVATE src/include src)
 target_link_libraries(test_floating_window PRIVATE tm_core Qt6::Widgets Qt6::Test)
 
 add_executable(test_sampler
-    tests/unit/test_sampler.cpp
+    src/tests/unit/test_sampler.cpp
 )
 target_link_libraries(test_sampler PRIVATE tm_core Qt6::Test)
 
 add_executable(test_settings_dialog
-    tests/unit/test_settings_dialog.cpp
+    src/tests/unit/test_settings_dialog.cpp
     src/ui/settings_dialog.cpp
     src/ui/settings_dialog.ui
 )
-target_include_directories(test_settings_dialog PRIVATE include src)
+target_include_directories(test_settings_dialog PRIVATE src/include src)
 target_link_libraries(test_settings_dialog PRIVATE tm_core Qt6::Widgets Qt6::Test)
 
 add_executable(test_tray_icon
-    tests/unit/test_tray_icon.cpp
+    src/tests/unit/test_tray_icon.cpp
     src/ui/tray_icon.cpp
     src/ui/tray_icon.ui
 )
-target_include_directories(test_tray_icon PRIVATE include src)
+target_include_directories(test_tray_icon PRIVATE src/include src)
 target_link_libraries(test_tray_icon PRIVATE tm_core Qt6::Widgets Qt6::Test)
 
 add_executable(test_logger
-    tests/unit/test_logger.cpp
+    src/tests/unit/test_logger.cpp
 )
 target_link_libraries(test_logger PRIVATE tm_core Qt6::Test)
 

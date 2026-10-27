@@ -108,7 +108,7 @@ gnome-extensions enable ubuntu-appindicators@ubuntu.com
 
 NVIDIA 插件通过 `dlopen("libnvidia-ml.so.1")` 加载 NVML。NVML 不可用时插件仍会加载，显示值降级为 `--`，主程序继续运行。
 
-插件 ABI 定义在 `include/tm_plugin_api.h`。插件必须导出：
+插件 ABI 定义在 `src/include/tm_plugin_api.h`。插件必须导出：
 
 ```c
 const TMPluginV1* tm_plugin_get_instance(uint32_t host_api_version);
@@ -116,12 +116,13 @@ const TMPluginV1* tm_plugin_get_instance(uint32_t host_api_version);
 
 ## 目录
 
-- `include/tm/`：core 数据模型、采集器、存储、设置、采样线程
-- `include/tm_plugin_api.h`：稳定 C ABI
+- `src/include/tm/`：core 数据模型、采集器、存储、设置、采样线程
+- `src/include/tm_plugin_api.h`：稳定 C ABI
 - `src/core/`：采集、SQLite、插件宿主、采样
 - `src/ui/`：悬浮窗、托盘、设置对话框（Qt Designer `.ui` 表单）、主程序
-- `plugins/gpu/`：NVIDIA GPU 插件
-- `tests/unit/`：Qt Test 单元与集成测试
+- `src/plugins/gpu/`：NVIDIA GPU 插件
+- `src/tests/unit/`：Qt Test 单元与集成测试
+- `src/skins/`：自定义皮肤资源预留目录（P0 未实现，见 `src/skins/README.md`）
 - `packaging/`：deb 桌面文件与 XWayland 启动 wrapper
 
 ## 已知限制

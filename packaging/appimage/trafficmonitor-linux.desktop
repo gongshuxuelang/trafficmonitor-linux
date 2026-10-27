@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=TrafficMonitor
+Comment=Always-on-top network, CPU, memory and GPU monitor
+Exec=trafficmonitor-linux
+Icon=trafficmonitor-linux
+Terminal=false
+Categories=System;Monitor;
+StartupNotify=false

@@ -5,6 +5,9 @@
 set -euo pipefail
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+# shellcheck source=bundle-runtime.sh
+. "$SCRIPT_DIR/bundle-runtime.sh"
 BUILD_DIR="${TM_BUILD_DIR:-$ROOT/build/release}"
 OUT_DIR="${TM_PACKAGE_DIR:-$ROOT/build/packages}"
 SKIP_BUILD=0
@@ -88,76 +91,7 @@ DESTDIR="$STAGE" cmake --install "$BUILD_DIR" --prefix /usr
 
 BUNDLE="$STAGE/usr/lib/trafficmonitor-linux"
 LIB_DIR="$BUNDLE/lib"
-QT_PLUGIN_DIR="$BUNDLE/qt-plugins"
-mkdir -p "$LIB_DIR" "$QT_PLUGIN_DIR"
-
-QT_PLUGIN_ROOT=$(qmake6 -query QT_INSTALL_PLUGINS 2>/dev/null || true)
-if [ -z "$QT_PLUGIN_ROOT" ] || [ ! -d "$QT_PLUGIN_ROOT" ]; then
-    QT_PLUGIN_ROOT=$(qtpaths6 --query QT_INSTALL_PLUGINS 2>/dev/null || true)
-fi
-if [ -z "$QT_PLUGIN_ROOT" ] || [ ! -d "$QT_PLUGIN_ROOT" ]; then
-    # 回退：从 libQt6Core 的位置推导插件目录
-    QT_CORE=$(ldd "$STAGE/usr/bin/trafficmonitor-linux" 2>/dev/null \
-        | awk '/libQt6Core\.so/ { print $3; exit }')
-    if [ -n "$QT_CORE" ]; then
-        QT_PLUGIN_ROOT="$(dirname "$QT_CORE")/qt6/plugins"
-    fi
-fi
-if [ -z "$QT_PLUGIN_ROOT" ] || [ ! -d "$QT_PLUGIN_ROOT" ]; then
-    echo "找不到 Qt 插件目录，需要 qmake6、qtpaths6 或可用的 Qt6 安装" >&2
-    exit 1
-fi
-
-# 平台插件（xcb/offscreen/wayland）、SQLite 驱动、图片和图标格式、xcb GL 集成
-for subdir in platforms sqldrivers imageformats iconengines xcbglintegrations; do
-    if [ -d "$QT_PLUGIN_ROOT/$subdir" ]; then
-        cp -aL "$QT_PLUGIN_ROOT/$subdir" "$QT_PLUGIN_DIR/"
-    fi
-done
-
-declare -A LIBS=()
-
-is_system_lib() {
-    case "$1" in
-        ld-linux*|linux-vdso*|libc.so.*|libm.so.*|libmvec.so.*|libdl.so.*|\
-        libpthread.so.*|librt.so.*|libresolv.so.*|libutil.so.*|libanl.so.*)
-            return 0
-            ;;
-        *) return 1 ;;
-    esac
-}
-
-collect_from() {
-    local file=$1 lib base
-    while IFS= read -r lib; do
-        [ -n "$lib" ] || continue
-        base=$(basename "$lib")
-        is_system_lib "$base" && continue
-        [ -n "${LIBS[$base]:-}" ] && continue
-        LIBS[$base]="$lib"
-    done < <(ldd "$file" 2>/dev/null | awk '/=> \// { print $3 } /^[[:space:]]*\// { print $1 }')
-}
-
-collect_from "$STAGE/usr/bin/trafficmonitor-linux"
-collect_from "$BUNDLE/plugins/gpu_plugin.so"
-while IFS= read -r -d '' plugin; do
-    collect_from "$plugin"
-done < <(find "$QT_PLUGIN_DIR" -type f -name '*.so' -print0)
-
-# 复制库，并对新复制的库继续收集，直到闭包不再增长
-while :; do
-    added=0
-    for base in "${!LIBS[@]}"; do
-        if [ ! -f "$LIB_DIR/$base" ]; then
-            cp -L "${LIBS[$base]}" "$LIB_DIR/$base"
-            added=1
-        fi
-    done
-    [ "$added" -eq 0 ] && break
-    while IFS= read -r -d '' libfile; do
-        collect_from "$libfile"
-    done < <(find "$LIB_DIR" -type f -name '*.so*' -print0)
-done
+tm_bundle_runtime "$STAGE"
 
 # 包内所有 ELF 需要的最高 glibc 版本；glibc 本身不打进包
 GLIBC_MIN=""

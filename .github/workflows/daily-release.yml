@@ -124,7 +124,7 @@ jobs:
       - name: Install build dependencies
         run: |
           apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build dpkg-dev file binutils \
+            build-essential cmake ninja-build dpkg-dev file binutils squashfs-tools \
             qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite libqt6svg6
 
       - name: Ensure CMake >= 3.28
@@ -167,9 +167,123 @@ jobs:
           path: build/packages/*.deb
           if-no-files-found: error
 
+      - name: Build AppImage
+        if: matrix.name == 'ubuntu22'
+        env:
+          TM_DEB_RELEASE: ${{ needs.prepare.outputs.release }}
+        run: bash packaging/build-appimage.sh --skip-build
+
+      - name: Upload AppImage
+        if: matrix.name == 'ubuntu22'
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage
+          path: build/packages/*.AppImage
+          if-no-files-found: error
+
+  build_rpm:
+    needs: prepare
+    if: needs.prepare.outputs.should_release == 'true' || inputs.force
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      image: fedora:latest
+    env:
+      TZ: Asia/Shanghai
+
+    steps:
+      - name: Install git
+        run: |
+          dnf install -y --setopt=install_weak_deps=False git ca-certificates curl tar gzip
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mark workspace safe for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install build dependencies
+        run: |
+          dnf install -y --setopt=install_weak_deps=False \
+            gcc-c++ cmake ninja-build rpm-build file binutils \
+            qt6-qtbase-devel qt6-qtsvg-devel
+
+      - name: Configure and build
+        run: |
+          cmake --preset release
+          cmake --build --preset release
+
+      - name: Test
+        run: ctest --preset release --output-on-failure
+
+      - name: Package
+        env:
+          TM_DEB_RELEASE: ${{ needs.prepare.outputs.release }}
+        run: bash packaging/build-rpm.sh --skip-build
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm
+          path: build/packages/*.rpm
+          if-no-files-found: error
+
+  build_arch:
+    needs: prepare
+    if: needs.prepare.outputs.should_release == 'true' || inputs.force
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      image: archlinux:latest
+    env:
+      TZ: Asia/Shanghai
+
+    steps:
+      - name: Install git
+        run: |
+          pacman -Syu --noconfirm --needed git ca-certificates curl
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mark workspace safe for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install build dependencies
+        run: |
+          pacman -S --noconfirm --needed base-devel cmake ninja qt6-base qt6-svg
+
+      - name: Configure and build
+        run: |
+          cmake --preset release
+          cmake --build --preset release
+
+      - name: Test
+        run: ctest --preset release --output-on-failure
+
+      - name: Package
+        env:
+          TM_DEB_RELEASE: ${{ needs.prepare.outputs.release }}
+        run: bash packaging/build-arch.sh --skip-build
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch
+          path: build/packages/*.pkg.tar.zst
+          if-no-files-found: error
+
   release:
-    needs: [prepare, build]
-    if: (needs.prepare.outputs.should_release == 'true' || inputs.force) && needs.build.result == 'success'
+    needs: [prepare, build, build_rpm, build_arch]
+    if: >-
+      (needs.prepare.outputs.should_release == 'true' || inputs.force) &&
+      needs.build.result == 'success' &&
+      needs.build_rpm.result == 'success' &&
+      needs.build_arch.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -188,7 +302,9 @@ jobs:
       - name: Checksums
         run: |
           cd artifacts
-          sha256sum *.deb > SHA256SUMS
+          find . -maxdepth 1 -type f \
+            \( -name '*.deb' -o -name '*.AppImage' -o -name '*.rpm' -o -name '*.pkg.tar.zst' \) \
+            -printf '%f\n' | sort | xargs -r sha256sum > SHA256SUMS
 
       - name: Release notes
         env:
@@ -202,12 +318,12 @@ jobs:
           {
             echo "### 安装包"
             echo
-            echo '文件名以 `ubuntu22-`、`ubuntu24-`、`ubuntu26-`、`debian12-`、`debian13-` 开头，选择与目标系统对应的包。'
+            echo '- Debian/Ubuntu：`ubuntu22-*`、`ubuntu24-*`、`ubuntu26-*`、`debian12-*`、`debian13-*` 的 `.deb`，分在线包和离线包。'
+            echo '- 通用 AppImage：`trafficmonitor-linux_*.AppImage`，捆绑 Qt，建议在 glibc 2.35+ 的系统上使用；没有 libfuse2 时可以加 `--appimage-extract-and-run`。'
+            echo '- Fedora RPM：`*.rpm`，文件名带 `fcXX` 发行版标识；RHEL/openSUSE 可以用同一脚本在对应系统构建。'
+            echo '- Arch/Manjaro：`*.pkg.tar.zst`。'
             echo
-            echo '- `*-trafficmonitor-linux_*.deb`：在线包，Qt 依赖由 apt 从软件源安装。'
-            echo '- `*-trafficmonitor-linux-offline_*.deb`：离线包，已捆绑 Qt 运行库和插件，只依赖 `libc6`。'
-            echo
-            echo '使用 `SHA256SUMS` 校验下载文件。离线包要求目标机器的 glibc 不低于构建机。'
+            echo '离线包和 AppImage 已捆绑 Qt 运行库与插件。使用 `SHA256SUMS` 校验下载文件。'
             echo
             echo "### 本次提交"
             echo
@@ -223,4 +339,7 @@ jobs:
           body_path: release-notes.md
           files: |
             artifacts/*.deb
+            artifacts/*.AppImage
+            artifacts/*.rpm
+            artifacts/*.pkg.tar.zst
             artifacts/SHA256SUMS

@@ -1,0 +1,20 @@
+#!/bin/sh
+# AppImage 启动脚本：定位捆绑的 Qt 运行库、Qt 插件和 TrafficMonitor 插件。
+HERE="${APPDIR:-$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)}"
+BUNDLE="$HERE/usr/lib/trafficmonitor-linux"
+
+if [ -d "$BUNDLE/lib" ]; then
+    export LD_LIBRARY_PATH="$BUNDLE/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
+if [ -d "$BUNDLE/qt-plugins" ]; then
+    export QT_PLUGIN_PATH="$BUNDLE/qt-plugins${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
+    export QT_QPA_PLATFORM_PLUGIN_PATH="$BUNDLE/qt-plugins/platforms"
+fi
+if [ -d "$BUNDLE/plugins" ]; then
+    export TRAFFICMONITOR_PLUGIN_DIR="$BUNDLE/plugins"
+fi
+if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && [ -z "${QT_QPA_PLATFORM:-}" ]; then
+    export QT_QPA_PLATFORM=xcb
+fi
+
+exec "$HERE/usr/bin/trafficmonitor-linux" "$@"

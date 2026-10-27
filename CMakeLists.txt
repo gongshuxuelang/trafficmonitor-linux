@@ -278,6 +278,18 @@ set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 set(CPACK_DEBIAN_PACKAGE_RELEASE "1")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
+# RPM 使用 cpack -G RPM 生成，release 由 packaging/build-rpm.sh 覆盖
+set(CPACK_RPM_PACKAGE_NAME "trafficmonitor-linux")
+set(CPACK_RPM_PACKAGE_SUMMARY "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
+set(CPACK_RPM_PACKAGE_DESCRIPTION
+    "Qt Widgets system monitor with a floating window, tray icon, "
+    "SQLite history and a stable C ABI plugin system.")
+set(CPACK_RPM_PACKAGE_LICENSE "Unspecified")
+set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
+set(CPACK_RPM_PACKAGE_RELEASE "1")
+set(CPACK_RPM_PACKAGE_AUTOREQ ON)
+set(CPACK_RPM_PACKAGE_CONFLICTS "trafficmonitor-linux-offline")
+
 if(TM_DEB_SHLIBDEPS)
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
     # SQLite 驱动是运行时加载的 Qt 插件，dpkg-shlibdeps 扫描不到，需要手动补。

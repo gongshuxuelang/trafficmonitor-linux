@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -114,7 +114,7 @@ jobs:
           apt-get install -y --no-install-recommends git ca-certificates curl tzdata
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -162,7 +162,7 @@ jobs:
         run: bash packaging/build-deb.sh --skip-build
 
       - name: Upload packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: deb-${{ matrix.name }}
           path: build/packages/*.deb
@@ -176,7 +176,7 @@ jobs:
 
       - name: Upload AppImage
         if: matrix.name == 'ubuntu22'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: appimage
           path: build/packages/*.AppImage
@@ -198,7 +198,7 @@ jobs:
           dnf install -y --setopt=install_weak_deps=False git ca-certificates curl tar gzip
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -226,7 +226,7 @@ jobs:
         run: bash packaging/build-rpm.sh --skip-build
 
       - name: Upload packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: rpm
           path: build/packages/*.rpm
@@ -248,7 +248,7 @@ jobs:
           pacman -Syu --noconfirm --needed git ca-certificates curl
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -273,7 +273,7 @@ jobs:
         run: bash packaging/build-arch.sh --skip-build
 
       - name: Upload packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: arch
           path: build/packages/*.pkg.tar.zst
@@ -291,12 +291,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Download packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true
@@ -333,7 +333,7 @@ jobs:
           } > release-notes.md
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.prepare.outputs.tag }}
           name: TrafficMonitor for Linux ${{ needs.prepare.outputs.release }}

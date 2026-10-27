@@ -77,15 +77,19 @@ cmake --build --preset release
 
 产物在 `build/packages/`：
 
-- `trafficmonitor-linux_0.1.0-1_amd64.deb`：在线包，Qt/glibc 依赖由 apt 从软件源安装。
-- `trafficmonitor-linux-offline_0.1.0-1_amd64.deb`：离线包，捆绑 Qt 运行库、平台/图片/SQLite 插件及其依赖，只依赖 `libc6`。两个包冲突，不能同时安装。
+- `ubuntu26-trafficmonitor-linux_0.1.0-1_amd64.deb`：在线包，Qt/glibc 依赖由 apt 从软件源安装。
+- `ubuntu26-trafficmonitor-linux-offline_0.1.0-1_amd64.deb`：离线包，捆绑 Qt 运行库、平台/图片/SQLite 插件及其依赖，只依赖 `libc6`。两个包冲突，不能同时安装。
+
+文件名开头的 `ubuntu26` 由 `/etc/os-release` 的 `ID` 和 `VERSION_ID` 主版本生成，
+也可以用 `TM_OS_TAG` 覆盖，例如 `TM_OS_TAG=ubuntu24`。包内的 `Package` 字段保持
+`trafficmonitor-linux`，这样跨系统升级不会变成两个不同的包。
 
 安装：
 
 ```bash
-sudo apt install ./build/packages/trafficmonitor-linux_0.1.0-1_amd64.deb
+sudo apt install ./build/packages/ubuntu26-trafficmonitor-linux_0.1.0-1_amd64.deb
 # 或
-sudo apt install ./build/packages/trafficmonitor-linux-offline_0.1.0-1_amd64.deb
+sudo apt install ./build/packages/ubuntu26-trafficmonitor-linux-offline_0.1.0-1_amd64.deb
 ```
 
 包内路径：
@@ -128,10 +132,12 @@ cpack --preset deb
 - 有新提交：构建、跑测试、生成两个 `.deb`，创建 `v<版本>-<日期>.<短SHA>` 标签并发布 GitHub Release。
 - 也可以在 Actions 页面手动运行，勾选 `force` 可以忽略“无新提交”检查。
 
-版本号格式为 `0.1.0-20261027.abc1234`：`0.1.0` 取 `CMakeLists.txt` 的
+包文件名格式为 `ubuntu26-trafficmonitor-linux_0.1.0-20261027.abc1234_amd64.deb`，
+Release 标签为 `v0.1.0-20261027.abc1234`。`0.1.0` 取 `CMakeLists.txt` 的
 `project(... VERSION ...)` 和最近 `v*` 标签前缀中较大的一个；`20261027` 是北京时间日期；
-`abc1234` 是发布提交的短 SHA。同一天多次发布用 SHA 区分。
-需要里程碑版本时，改 `CMakeLists.txt` 的版本号或打 `v1.0.0` 标签都可以，后续每日包会自动使用更大的前缀。
+`abc1234` 是发布提交的短 SHA；`ubuntu26` 是构建系统的标识。
+同一天多次发布用 SHA 区分。需要里程碑版本时，改 `CMakeLists.txt` 的版本号或打 `v1.0.0`
+标签都可以，后续每日包会自动使用更大的前缀。
 
 Release 附件包含在线包、离线包和 `SHA256SUMS`。流水线在 `ubuntu:26.04` 容器里构建，
 匹配 Qt 6.10 和 glibc 2.43。工作流文件需要提交到默认分支，定时任务才会生效。

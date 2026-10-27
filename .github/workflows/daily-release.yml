@@ -40,6 +40,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Mark workspace safe for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Check for new commits
         id: check
         run: |
@@ -129,9 +132,10 @@ jobs:
           {
             echo "### 安装包"
             echo
-            echo '- `trafficmonitor-linux_*.deb`：在线包，Qt 依赖由 apt 从软件源安装。'
-            echo '- `trafficmonitor-linux-offline_*.deb`：离线包，已捆绑 Qt 运行库和插件，只依赖 `libc6`。'
+            echo '- `ubuntu26-trafficmonitor-linux_*.deb`：在线包，Qt 依赖由 apt 从软件源安装。'
+            echo '- `ubuntu26-trafficmonitor-linux-offline_*.deb`：离线包，已捆绑 Qt 运行库和插件，只依赖 `libc6`。'
             echo
+            echo '包文件名以 `ubuntu26-` 这类系统标识开头，对应构建机的发行版。'
             echo '使用 `SHA256SUMS` 校验下载文件。离线包要求目标机器的 glibc 不低于构建机。'
             echo
             echo "### 本次提交"

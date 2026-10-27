@@ -17,6 +17,7 @@ usage() {
   TM_BUILD_DIR    Release 构建目录，默认 build/release
   TM_PACKAGE_DIR  输出目录，默认 build/packages
   TM_DEB_RELEASE  Debian revision，默认取 CMakeLists.txt 中的 CPACK_DEBIAN_PACKAGE_RELEASE
+  TM_OS_TAG       系统标识，默认从 /etc/os-release 生成，例如 ubuntu26
 EOF
 }
 
@@ -44,8 +45,25 @@ case "$RELEASE" in
         exit 1
         ;;
 esac
+
+# 系统标识：ubuntu26、debian13 之类，用于区分不同发行版的包
+OS_TAG="${TM_OS_TAG:-}"
+if [ -z "$OS_TAG" ] && [ -r /etc/os-release ]; then
+    # 在子 shell 里读取，避免 /etc/os-release 的 VERSION 覆盖项目版本号
+    OS_TAG=$(
+        # shellcheck disable=SC1091
+        . /etc/os-release
+        printf '%s%s' "${ID:-}" "${VERSION_ID:-}"
+    )
+    OS_TAG="${OS_TAG%%.*}"
+fi
+OS_TAG=$(printf '%s' "${OS_TAG:-unknown}" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')
+[ -n "$OS_TAG" ] || OS_TAG="unknown"
+
 DEB_VERSION="${VERSION}-${RELEASE}"
 ARCH=$(dpkg --print-architecture)
+ONLINE_NAME="${OS_TAG}-trafficmonitor-linux_${DEB_VERSION}_${ARCH}.deb"
+OFFLINE_NAME="${OS_TAG}-trafficmonitor-linux-offline_${DEB_VERSION}_${ARCH}.deb"
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
     (cd "$ROOT" && cmake --preset release)
@@ -55,8 +73,10 @@ fi
 mkdir -p "$OUT_DIR"
 
 echo "==> 在线包"
-(cd "$ROOT" && cpack --preset deb -D "CPACK_DEBIAN_PACKAGE_RELEASE=${RELEASE}")
-ONLINE_DEB="$BUILD_DIR/trafficmonitor-linux_${DEB_VERSION}_${ARCH}.deb"
+(cd "$ROOT" && cpack --preset deb \
+    -D "CPACK_DEBIAN_PACKAGE_RELEASE=${RELEASE}" \
+    -D "CPACK_DEBIAN_FILE_NAME=${ONLINE_NAME}")
+ONLINE_DEB="$BUILD_DIR/$ONLINE_NAME"
 [ -f "$ONLINE_DEB" ] || { echo "未找到 $ONLINE_DEB" >&2; exit 1; }
 cp -f "$ONLINE_DEB" "$OUT_DIR/"
 
@@ -176,7 +196,7 @@ EOF
 chmod 755 "$STAGE/DEBIAN"
 chmod 644 "$STAGE/DEBIAN/control"
 
-OFFLINE_DEB="$OUT_DIR/trafficmonitor-linux-offline_${DEB_VERSION}_${ARCH}.deb"
+OFFLINE_DEB="$OUT_DIR/$OFFLINE_NAME"
 dpkg-deb --build --root-owner-group "$STAGE" "$OFFLINE_DEB"
 
 echo

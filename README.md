@@ -31,7 +31,9 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-依赖：Ubuntu 26.04、Qt 6.10（最低 6.5）、CMake 3.28+、Ninja、C++20。
+依赖：Qt 6.2+、CMake 3.28+、Ninja、C++20。构建矩阵覆盖 Ubuntu 22.04/24.04/26.04、
+Debian 12/13。Ubuntu 22.04 和 Debian 12 自带的 CMake 低于 3.28，
+流水线会自动下载并校验 CMake 3.31.6。
 
 构建默认由 Ninja 按 CPU 核数并行；系统装有 `ccache` 时配置阶段会自动启用编译缓存
 （`-DTM_USE_CCACHE=OFF` 可关闭）。
@@ -124,23 +126,69 @@ cpack --preset deb
 - 通过 `trafficmonitor-linux-wrapper` 启动时会自动设置 `LD_LIBRARY_PATH` 和 `QT_PLUGIN_PATH`，桌面图标和命令行都应使用该 wrapper。
 - 包内含 Qt 动态库，分发时需遵守 LGPL 要求。
 
+## AppImage、RPM 和 Arch 包
+
+三个脚本都复用离线包的 Qt 捆绑逻辑（`packaging/bundle-runtime.sh`），已有 Release
+构建时加 `--skip-build`。
+
+### AppImage（通用）
+
+```bash
+./packaging/build-appimage.sh
+```
+
+生成 `build/packages/trafficmonitor-linux_<版本>_x86_64.AppImage`。在 Ubuntu 22.04
+上构建时 glibc 下限是 2.35，可运行在 Ubuntu 22.04+、Debian 12+、Fedora 36+ 等系统。
+系统没有 libfuse2 时可以加 `--appimage-extract-and-run`。AppImage 不分在线/离线，
+Qt 运行库和插件都捆绑在里面。
+
+### RPM（Fedora/RHEL/openSUSE）
+
+```bash
+./packaging/build-rpm.sh
+```
+
+生成在线包 `trafficmonitor-linux-<版本>-<release>.<arch>.rpm` 和离线包
+`trafficmonitor-linux-offline-...rpm`，release 带发行版标识（`fc41`、`el9`、`suse15`）。
+需要在有 `rpmbuild` 的系统上执行，CI 目前使用 `fedora:latest`；脚本会根据
+`/etc/os-release` 生成 `fc`/`el`/`suse` 标识，也可以在对应的 RHEL/openSUSE
+容器里运行。License 字段默认 `Unspecified`，可以用 `TM_RPM_LICENSE` 覆盖。
+
+### Arch（Arch/Manjaro）
+
+```bash
+./packaging/build-arch.sh
+```
+
+生成 `trafficmonitor-linux-<版本>-1-x86_64.pkg.tar.zst` 和对应的 offline 包。
+需要在 Arch 系统上执行（`base-devel`、`qt6-base`、`qt6-svg`），CI 使用
+`archlinux:latest`。脚本在 root 环境会自动创建 `builder` 用户运行 `makepkg`。
+License 字段默认 `custom`，可以用 `TM_ARCH_LICENSE` 覆盖。
+
+Flatpak 和 Snap 暂未接入流水线：它们需要额外的运行时、沙箱权限（`/proc`、`/sys`、
+托盘）和发布工具，当前 AppImage 已经覆盖大多数发行版。需要时再单独验证这套沙箱行为。
+
 ## 自动发布
 
 `.github/workflows/daily-release.yml` 每天北京时间 05:00 检查默认分支是否有新提交：
 
 - 没有新提交：跳过。
-- 有新提交：构建、跑测试、生成两个 `.deb`，创建 `v<版本>-<日期>.<短SHA>` 标签并发布 GitHub Release。
+- 有新提交：并行构建 Ubuntu 22.04/24.04/26.04、Debian 12/13 的 `.deb`，另加一个
+  通用 AppImage、Fedora RPM 和 Arch 包，然后创建一个包含全部附件的 GitHub Release。
 - 也可以在 Actions 页面手动运行，勾选 `force` 可以忽略“无新提交”检查。
 
-包文件名格式为 `ubuntu26-trafficmonitor-linux_0.1.0-20261027.abc1234_amd64.deb`，
+`*.deb` 的文件名格式为 `<系统>-trafficmonitor-linux_0.1.0-20261027.abc1234_amd64.deb`，
+系统前缀有 `ubuntu22-`、`ubuntu24-`、`ubuntu26-`、`debian12-`、`debian13-`。
 Release 标签为 `v0.1.0-20261027.abc1234`。`0.1.0` 取 `CMakeLists.txt` 的
 `project(... VERSION ...)` 和最近 `v*` 标签前缀中较大的一个；`20261027` 是北京时间日期；
-`abc1234` 是发布提交的短 SHA；`ubuntu26` 是构建系统的标识。
-同一天多次发布用 SHA 区分。需要里程碑版本时，改 `CMakeLists.txt` 的版本号或打 `v1.0.0`
-标签都可以，后续每日包会自动使用更大的前缀。
+`abc1234` 是发布提交的短 SHA。同一天多次发布用 SHA 区分。需要里程碑版本时，改
+`CMakeLists.txt` 的版本号或打 `v1.0.0` 标签都可以，后续每日包会自动使用更大的前缀。
 
-Release 附件包含在线包、离线包和 `SHA256SUMS`。流水线在 `ubuntu:26.04` 容器里构建，
-匹配 Qt 6.10 和 glibc 2.43。工作流文件需要提交到默认分支，定时任务才会生效。
+Release 附件包括五个系统的在线/离线 `.deb`、`*.AppImage`、Fedora/RHEL 的 `*.rpm`、
+Arch 的 `*.pkg.tar.zst` 和 `SHA256SUMS`。每个系统在自己的容器里构建，离线包的
+glibc 下限对应那个系统。Ubuntu 22.04 和 Debian 12 的 CMake 低于 3.28，流水线会
+自动下载 CMake 3.31.6。私有仓库的矩阵会按任务数消耗 Actions 分钟。工作流文件
+需要提交到默认分支，定时任务才会生效。
 
 ## 运行
 

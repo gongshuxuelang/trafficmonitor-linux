@@ -1,11 +1,6 @@
 #include "core/plugin/tm_plugin_api.h"
 
-#include <array>
-#include <chrono>
-#include <cstdio>
-#include <cstring>
 #include <dlfcn.h>
-#include <mutex>
 
 namespace {
 

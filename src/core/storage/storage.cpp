@@ -1,16 +1,5 @@
 #include "core/storage/storage.h"
 
-#include <QDateTime>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QSaveFile>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QUuid>
-
-#include <utility>
-
 namespace tm_linux {
 
 namespace {

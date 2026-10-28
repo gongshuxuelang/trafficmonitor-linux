@@ -1,9 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_CORE_METRICS_H_
+#define TRAFFICMONITOR_LINUX_SRC_CORE_METRICS_H_
 
-#include <cstdint>
-#include <optional>
-#include <string>
-#include <vector>
+#include "pch.h"
 
 namespace tm_linux {
 
@@ -72,3 +70,5 @@ struct Snapshot {
 };
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_CORE_METRICS_H_

@@ -1,11 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_UI_FLOATING_WINDOW_H_
+#define TRAFFICMONITOR_LINUX_SRC_UI_FLOATING_WINDOW_H_
 
-#include <QPoint>
-#include <QStringList>
-#include <QWidget>
-
-#include <memory>
-#include <vector>
+#include "pch.h"
 
 #include "core/app_settings.h"
 #include "core/metrics.h"
@@ -140,3 +136,5 @@ private:
 };
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_UI_FLOATING_WINDOW_H_

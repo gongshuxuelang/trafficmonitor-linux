@@ -1,10 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_CORE_SAMPLER_H_
+#define TRAFFICMONITOR_LINUX_SRC_CORE_SAMPLER_H_
 
-#include <atomic>
-#include <functional>
-#include <memory>
-#include <mutex>
-#include <thread>
+#include "pch.h"
 
 #include "core/metrics.h"
 #include "core/system_metrics.h"
@@ -75,3 +72,5 @@ private:
 };
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_CORE_SAMPLER_H_

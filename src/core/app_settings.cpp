@@ -1,11 +1,5 @@
 #include "core/app_settings.h"
 
-#include <QJsonArray>
-#include <QJsonObject>
-
-#include <algorithm>
-#include <set>
-
 namespace tm_linux {
 
 namespace {

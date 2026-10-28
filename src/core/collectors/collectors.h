@@ -1,13 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_CORE_COLLECTORS_COLLECTORS_H_
+#define TRAFFICMONITOR_LINUX_SRC_CORE_COLLECTORS_COLLECTORS_H_
 
-#include <chrono>
-#include <cstdint>
-#include <filesystem>
-#include <optional>
-#include <string>
-#include <string_view>
-#include <unordered_map>
-#include <vector>
+#include "pch.h"
 
 #include "core/metrics.h"
 
@@ -229,3 +223,5 @@ private:
 };
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_CORE_COLLECTORS_COLLECTORS_H_

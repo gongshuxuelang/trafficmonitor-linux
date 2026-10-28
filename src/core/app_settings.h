@@ -1,9 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_CORE_APP_SETTINGS_H_
+#define TRAFFICMONITOR_LINUX_SRC_CORE_APP_SETTINGS_H_
 
-#include <QString>
-
-#include <string>
-#include <vector>
+#include "pch.h"
 
 #include "core/formatting.h"
 #include "core/storage/storage.h"
@@ -82,3 +80,5 @@ private:
 };
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_CORE_APP_SETTINGS_H_

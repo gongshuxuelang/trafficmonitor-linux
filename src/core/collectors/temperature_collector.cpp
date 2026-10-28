@@ -1,12 +1,5 @@
 #include "core/collectors/collectors.h"
 
-#include <algorithm>
-#include <charconv>
-#include <cctype>
-#include <fstream>
-#include <string>
-#include <system_error>
-
 namespace tm_linux {
 
 namespace {

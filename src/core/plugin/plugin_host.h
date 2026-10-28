@@ -1,9 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_CORE_PLUGIN_PLUGIN_HOST_H_
+#define TRAFFICMONITOR_LINUX_SRC_CORE_PLUGIN_PLUGIN_HOST_H_
 
-#include <cstdint>
-#include <filesystem>
-#include <string>
-#include <vector>
+#include "pch.h"
 
 #include "core/metrics.h"
 #include "core/plugin/tm_plugin_api.h"
@@ -133,3 +131,5 @@ private:
 };
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_CORE_PLUGIN_PLUGIN_HOST_H_

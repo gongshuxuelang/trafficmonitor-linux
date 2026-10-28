@@ -1,10 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_UI_SETTINGS_DIALOG_H_
+#define TRAFFICMONITOR_LINUX_SRC_UI_SETTINGS_DIALOG_H_
 
-#include <QDialog>
-
-#include <memory>
-#include <string>
-#include <vector>
+#include "pch.h"
 
 #include "core/app_settings.h"
 
@@ -48,3 +45,5 @@ private:
 };
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_UI_SETTINGS_DIALOG_H_

@@ -87,8 +87,15 @@ add_library(tm_core STATIC
     src/core/sampler.cpp
     src/core/logger.cpp
 )
-target_include_directories(tm_core PUBLIC src)
-target_link_libraries(tm_core PUBLIC Qt6::Core Qt6::Sql ${CMAKE_DL_LIBS})
+target_include_directories(tm_core PUBLIC src src/include)
+# pch.h 汇总了项目用到的全部 Qt 头文件，因此核心库也需要这些模块的头文件路径。
+target_link_libraries(tm_core PUBLIC
+    Qt6::Core
+    Qt6::Sql
+    Qt6::Widgets
+    Qt6::Network
+    ${CMAKE_DL_LIBS}
+)
 
 add_executable(tm_tests
     src/tests/unit/test_network_collector.cpp
@@ -131,15 +138,21 @@ add_executable(test_storage
 target_link_libraries(test_storage PRIVATE tm_core Qt6::Test)
 
 add_library(test_plugin MODULE src/tests/plugins/test_plugin.cpp)
-target_include_directories(test_plugin PRIVATE src)
+target_include_directories(test_plugin PRIVATE src src/include)
+target_link_libraries(test_plugin PRIVATE Qt6::Widgets Qt6::Sql Qt6::Network)
 set_target_properties(test_plugin PROPERTIES PREFIX "" OUTPUT_NAME "test_plugin")
 
 add_library(empty_plugin MODULE src/tests/plugins/empty_plugin.cpp)
 set_target_properties(empty_plugin PROPERTIES PREFIX "" OUTPUT_NAME "empty_plugin")
 
 add_library(gpu_plugin MODULE src/plugins/gpu/gpu_plugin.cpp)
-target_include_directories(gpu_plugin PRIVATE src)
-target_link_libraries(gpu_plugin PRIVATE ${CMAKE_DL_LIBS})
+target_include_directories(gpu_plugin PRIVATE src src/include)
+target_link_libraries(gpu_plugin PRIVATE
+    Qt6::Widgets
+    Qt6::Sql
+    Qt6::Network
+    ${CMAKE_DL_LIBS}
+)
 set_target_properties(gpu_plugin PROPERTIES
     PREFIX ""
     OUTPUT_NAME "gpu_plugin"

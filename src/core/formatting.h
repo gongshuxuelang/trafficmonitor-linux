@@ -1,8 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_CORE_FORMATTING_H_
+#define TRAFFICMONITOR_LINUX_SRC_CORE_FORMATTING_H_
 
-#include <cstdint>
-#include <optional>
-#include <string>
+#include "pch.h"
 
 namespace tm_linux {
 
@@ -69,3 +68,5 @@ std::string formatMemory(std::uint64_t used_bytes, std::uint64_t total_bytes);
 std::string formatBytes(std::uint64_t bytes);
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_CORE_FORMATTING_H_

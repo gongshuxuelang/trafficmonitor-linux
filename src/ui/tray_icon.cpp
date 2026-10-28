@@ -1,13 +1,6 @@
 #include "ui/tray_icon.h"
 #include "ui_tray_icon.h"
 
-#include <QAction>
-#include <QIcon>
-#include <QMenu>
-#include <QPainter>
-#include <QPixmap>
-#include <QSystemTrayIcon>
-
 namespace tm_linux {
 
 namespace {

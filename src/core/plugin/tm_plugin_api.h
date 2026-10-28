@@ -5,6 +5,8 @@
 #ifndef TM_PLUGIN_API_H
 #define TM_PLUGIN_API_H
 
+#include "pch.h"
+
 #include <stddef.h>
 #include <stdint.h>
 

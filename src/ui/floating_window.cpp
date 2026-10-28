@@ -1,16 +1,6 @@
 #include "ui/floating_window.h"
 #include "ui_floating_window.h"
 
-#include <QAction>
-#include <QContextMenuEvent>
-#include <QFontMetrics>
-#include <QMenu>
-#include <QMouseEvent>
-#include <QPainter>
-#include <QPainterPath>
-
-#include <algorithm>
-
 namespace tm_linux {
 
 namespace {

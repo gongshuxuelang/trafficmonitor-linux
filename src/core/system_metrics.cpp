@@ -1,13 +1,5 @@
 #include "core/system_metrics.h"
 
-#include <algorithm>
-#include <chrono>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 #include <sys/statvfs.h>
 #include <unistd.h>
 

@@ -1,13 +1,5 @@
 #include "core/logger.h"
 
-#include <QDateTime>
-#include <QDir>
-#include <QFileInfo>
-#include <QMutexLocker>
-
-#include <cstdio>
-#include <system_error>
-
 namespace tm_linux {
 
 namespace {

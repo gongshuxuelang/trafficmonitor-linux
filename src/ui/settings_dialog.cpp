@@ -1,18 +1,6 @@
 #include "ui/settings_dialog.h"
 #include "ui_settings_dialog.h"
 
-#include <QCheckBox>
-#include <QComboBox>
-#include <QDialogButtonBox>
-#include <QDir>
-#include <QLineEdit>
-#include <QListWidget>
-#include <QListWidgetItem>
-#include <QSpinBox>
-
-#include <set>
-#include <utility>
-
 namespace tm_linux {
 
 namespace {

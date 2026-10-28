@@ -1,8 +1,5 @@
 #include "core/sampler.h"
 
-#include <algorithm>
-#include <chrono>
-
 namespace tm_linux {
 
 Sampler::Sampler(SystemMetricsCollector& collector)

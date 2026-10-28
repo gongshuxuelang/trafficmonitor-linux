@@ -1,9 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_UI_TRAY_ICON_H_
+#define TRAFFICMONITOR_LINUX_SRC_UI_TRAY_ICON_H_
 
-#include <QObject>
-#include <QString>
-
-#include <memory>
+#include "pch.h"
 
 class QMenu;
 class QSystemTrayIcon;
@@ -83,3 +81,5 @@ private:
 };
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_UI_TRAY_ICON_H_

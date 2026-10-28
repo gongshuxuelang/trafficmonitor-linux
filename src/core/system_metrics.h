@@ -1,9 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_CORE_SYSTEM_METRICS_H_
+#define TRAFFICMONITOR_LINUX_SRC_CORE_SYSTEM_METRICS_H_
 
-#include <cstdint>
-#include <filesystem>
-#include <optional>
-#include <string>
+#include "pch.h"
 
 #include "core/collectors/collectors.h"
 #include "core/metrics.h"
@@ -64,3 +62,5 @@ private:
 };
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_CORE_SYSTEM_METRICS_H_

@@ -1,13 +1,7 @@
-#pragma once
+#ifndef TRAFFICMONITOR_LINUX_SRC_CORE_STORAGE_STORAGE_H_
+#define TRAFFICMONITOR_LINUX_SRC_CORE_STORAGE_STORAGE_H_
 
-#include <QJsonObject>
-#include <QJsonValue>
-#include <QSqlDatabase>
-#include <QString>
-
-#include <cstdint>
-#include <filesystem>
-#include <optional>
+#include "pch.h"
 
 namespace tm_linux {
 
@@ -188,3 +182,5 @@ private:
 };
 
 } // namespace tm_linux
+
+#endif  // TRAFFICMONITOR_LINUX_SRC_CORE_STORAGE_STORAGE_H_

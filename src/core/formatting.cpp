@@ -1,9 +1,5 @@
 #include "core/formatting.h"
 
-#include <algorithm>
-#include <cmath>
-#include <cstdio>
-
 namespace tm_linux {
 
 namespace {

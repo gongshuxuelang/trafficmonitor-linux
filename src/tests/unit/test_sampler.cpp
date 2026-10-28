@@ -2,7 +2,7 @@
 
 #include <atomic>
 
-#include "tm/sampler.h"
+#include "core/sampler.h"
 
 using namespace tm_linux;
 

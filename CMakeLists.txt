@@ -87,7 +87,7 @@ add_library(tm_core STATIC
     src/core/sampler.cpp
     src/core/logger.cpp
 )
-target_include_directories(tm_core PUBLIC src/include)
+target_include_directories(tm_core PUBLIC src)
 target_link_libraries(tm_core PUBLIC Qt6::Core Qt6::Sql ${CMAKE_DL_LIBS})
 
 add_executable(tm_tests
@@ -131,14 +131,14 @@ add_executable(test_storage
 target_link_libraries(test_storage PRIVATE tm_core Qt6::Test)
 
 add_library(test_plugin MODULE src/tests/plugins/test_plugin.cpp)
-target_include_directories(test_plugin PRIVATE src/include)
+target_include_directories(test_plugin PRIVATE src)
 set_target_properties(test_plugin PROPERTIES PREFIX "" OUTPUT_NAME "test_plugin")
 
 add_library(empty_plugin MODULE src/tests/plugins/empty_plugin.cpp)
 set_target_properties(empty_plugin PROPERTIES PREFIX "" OUTPUT_NAME "empty_plugin")
 
 add_library(gpu_plugin MODULE src/plugins/gpu/gpu_plugin.cpp)
-target_include_directories(gpu_plugin PRIVATE src/include)
+target_include_directories(gpu_plugin PRIVATE src)
 target_link_libraries(gpu_plugin PRIVATE ${CMAKE_DL_LIBS})
 set_target_properties(gpu_plugin PROPERTIES
     PREFIX ""
@@ -147,7 +147,7 @@ set_target_properties(gpu_plugin PROPERTIES
 )
 
 add_executable(trafficmonitor-linux
-    src/ui/main.cpp
+    src/main.cpp
     src/ui/floating_window.cpp
     src/ui/floating_window.ui
     src/ui/settings_dialog.cpp
@@ -155,6 +155,7 @@ add_executable(trafficmonitor-linux
     src/ui/tray_icon.cpp
     src/ui/tray_icon.ui
 )
+# src/include 仅保留 pch.h；其余头文件与实现同目录，通过 tm_core 的 PUBLIC src 暴露。
 target_include_directories(trafficmonitor-linux PRIVATE src/include src)
 target_link_libraries(trafficmonitor-linux PRIVATE
     tm_core
@@ -195,7 +196,7 @@ add_executable(test_floating_window
     src/ui/floating_window.cpp
     src/ui/floating_window.ui
 )
-target_include_directories(test_floating_window PRIVATE src/include src)
+target_include_directories(test_floating_window PRIVATE src)
 target_link_libraries(test_floating_window PRIVATE tm_core Qt6::Widgets Qt6::Test)
 
 add_executable(test_sampler
@@ -208,7 +209,7 @@ add_executable(test_settings_dialog
     src/ui/settings_dialog.cpp
     src/ui/settings_dialog.ui
 )
-target_include_directories(test_settings_dialog PRIVATE src/include src)
+target_include_directories(test_settings_dialog PRIVATE src)
 target_link_libraries(test_settings_dialog PRIVATE tm_core Qt6::Widgets Qt6::Test)
 
 add_executable(test_tray_icon
@@ -216,7 +217,7 @@ add_executable(test_tray_icon
     src/ui/tray_icon.cpp
     src/ui/tray_icon.ui
 )
-target_include_directories(test_tray_icon PRIVATE src/include src)
+target_include_directories(test_tray_icon PRIVATE src)
 target_link_libraries(test_tray_icon PRIVATE tm_core Qt6::Widgets Qt6::Test)
 
 add_executable(test_logger

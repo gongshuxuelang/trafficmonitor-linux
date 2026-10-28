@@ -1,4 +1,4 @@
-#include "tm/app_settings.h"
+#include "core/app_settings.h"
 
 #include <QJsonArray>
 #include <QJsonObject>
@@ -10,6 +10,15 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 从设置仓库读取整数并限制在指定范围内。
+ * @param repository 设置仓库。
+ * @param key 设置键。
+ * @param fallback 缺失或类型不符时的默认值。
+ * @param minimum 允许的最小值。
+ * @param maximum 允许的最大值。
+ * @return 限制在 [minimum, maximum] 内的整数。
+ */
 int clampedInt(SettingsRepository& repository, const QString& key, int fallback, int minimum,
                int maximum)
 {
@@ -20,12 +29,26 @@ int clampedInt(SettingsRepository& repository, const QString& key, int fallback,
     return std::clamp(value->toInt(), minimum, maximum);
 }
 
+/**
+ * @brief 从设置仓库读取布尔值。
+ * @param repository 设置仓库。
+ * @param key 设置键。
+ * @param fallback 缺失或类型不符时的默认值。
+ * @return 读取到的布尔值或默认值。
+ */
 bool boolValue(SettingsRepository& repository, const QString& key, bool fallback)
 {
     const auto value = repository.getValue(key);
     return value.has_value() && value->isBool() ? value->toBool() : fallback;
 }
 
+/**
+ * @brief 从设置仓库读取非空字符串。
+ * @param repository 设置仓库。
+ * @param key 设置键。
+ * @param fallback 缺失、类型不符或内容为空时的默认值。
+ * @return 读取到的字符串或默认值。
+ */
 std::string stringValue(SettingsRepository& repository, const QString& key,
                         const std::string& fallback)
 {
@@ -37,6 +60,11 @@ std::string stringValue(SettingsRepository& repository, const QString& key,
     return result.empty() ? fallback : result;
 }
 
+/**
+ * @brief 将存储字符串解析为单位模式。
+ * @param value "auto"、"kb" 或 "mb"。
+ * @return 对应的单位模式，未知值按 Auto 处理。
+ */
 UnitMode parseUnitMode(const std::string& value)
 {
     if (value == "kb") {
@@ -48,6 +76,11 @@ UnitMode parseUnitMode(const std::string& value)
     return UnitMode::Auto;
 }
 
+/**
+ * @brief 将单位模式转换为存储字符串。
+ * @param mode 单位模式。
+ * @return "auto"、"kb" 或 "mb"。
+ */
 std::string unitModeName(UnitMode mode)
 {
     switch (mode) {
@@ -61,11 +94,21 @@ std::string unitModeName(UnitMode mode)
     return "auto";
 }
 
+/**
+ * @brief 将存储字符串解析为速率单位基准。
+ * @param value "bit" 或其他值。
+ * @return Bit 或 Byte。
+ */
 UnitBase parseUnitBase(const std::string& value)
 {
     return value == "bit" ? UnitBase::Bit : UnitBase::Byte;
 }
 
+/**
+ * @brief 将速率单位基准转换为存储字符串。
+ * @param base 速率单位基准。
+ * @return "bit" 或 "byte"。
+ */
 std::string unitBaseName(UnitBase base)
 {
     return base == UnitBase::Bit ? "bit" : "byte";

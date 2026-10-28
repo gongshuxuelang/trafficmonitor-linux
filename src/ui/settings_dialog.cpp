@@ -17,6 +17,11 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 返回显示项的中文标签。
+ * @param id 显示项 ID。
+ * @return 标签文本；未知 ID 原样返回。
+ */
 QString itemLabel(const std::string& id)
 {
     if (id == "net.up") return QStringLiteral("上传速度");
@@ -31,6 +36,10 @@ QString itemLabel(const std::string& id)
     return QString::fromStdString(id);
 }
 
+/**
+ * @brief 枚举 /sys/class/net 下除 lo 以外的网络接口。
+ * @return 排序后的接口名列表。
+ */
 QStringList networkInterfaces()
 {
     QStringList result;

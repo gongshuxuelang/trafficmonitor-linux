@@ -1,4 +1,4 @@
-#include "tm/collectors.h"
+#include "core/collectors/collectors.h"
 
 #include <algorithm>
 #include <charconv>
@@ -10,6 +10,11 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 去除字符串两端的空白字符。
+ * @param value 输入文本。
+ * @return 去除空白后的视图。
+ */
 std::string_view trim(std::string_view value)
 {
     while (!value.empty() && std::isspace(static_cast<unsigned char>(value.front()))) {
@@ -21,6 +26,11 @@ std::string_view trim(std::string_view value)
     return value;
 }
 
+/**
+ * @brief 将千字节转换为字节。
+ * @param kilobytes 千字节数。
+ * @return 字节数。
+ */
 std::uint64_t kilobytesToBytes(std::uint64_t kilobytes)
 {
     return kilobytes * 1024;

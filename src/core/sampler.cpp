@@ -1,4 +1,4 @@
-#include "tm/sampler.h"
+#include "core/sampler.h"
 
 #include <algorithm>
 #include <chrono>

@@ -1,4 +1,4 @@
-#include "tm/collectors.h"
+#include "core/collectors/collectors.h"
 
 #include <algorithm>
 #include <charconv>
@@ -11,6 +11,11 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 读取文件首行内容（用于 hwmon 的 name 与温度输入文件）。
+ * @param path 文件路径。
+ * @return 首行文本；无法打开时返回空字符串。
+ */
 std::string readFile(const std::filesystem::path& path)
 {
     std::ifstream stream(path);
@@ -22,6 +27,11 @@ std::string readFile(const std::filesystem::path& path)
     return contents;
 }
 
+/**
+ * @brief 去除字符串两端的空白字符。
+ * @param value 输入文本。
+ * @return 去除空白后的视图。
+ */
 std::string_view trim(std::string_view value)
 {
     while (!value.empty() && std::isspace(static_cast<unsigned char>(value.front()))) {
@@ -33,6 +43,11 @@ std::string_view trim(std::string_view value)
     return value;
 }
 
+/**
+ * @brief 用候选值更新当前最大值。
+ * @param target 当前最大值，无值时直接写入候选值。
+ * @param candidate 候选温度值。
+ */
 void updateMaximum(std::optional<double>& target, double candidate)
 {
     if (!target.has_value() || candidate > target.value()) {

@@ -1,4 +1,4 @@
-#include "tm/system_metrics.h"
+#include "core/system_metrics.h"
 
 #include <algorithm>
 #include <chrono>
@@ -15,6 +15,11 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 读取文件全部内容。
+ * @param path 文件路径。
+ * @return 文件内容；无法打开时返回空字符串。
+ */
 std::string readFile(const std::filesystem::path& path)
 {
     std::ifstream stream(path);
@@ -27,6 +32,11 @@ std::string readFile(const std::filesystem::path& path)
     return contents.str();
 }
 
+/**
+ * @brief 从 /proc/net/route 内容中查找默认路由使用的网卡。
+ * @param route_content route 文件内容。
+ * @return 默认路由网卡名；未找到时返回空字符串。
+ */
 std::string defaultRouteInterface(std::string_view route_content)
 {
     std::istringstream lines{std::string(route_content)};
@@ -50,6 +60,12 @@ std::string defaultRouteInterface(std::string_view route_content)
     return {};
 }
 
+/**
+ * @brief 在采样列表中按接口名查找。
+ * @param samples 网络接口采样列表。
+ * @param interface 接口名。
+ * @return 找到的采样指针；未找到时返回 nullptr。
+ */
 const NetworkSample* findInterface(const std::vector<NetworkSample>& samples,
                                    std::string_view interface)
 {
@@ -59,6 +75,17 @@ const NetworkSample* findInterface(const std::vector<NetworkSample>& samples,
     return it == samples.end() ? nullptr : &*it;
 }
 
+/**
+ * @brief 选择要展示的网卡。
+ *
+ * 依次尝试：配置的接口、默认路由接口、首个有流量的非 lo 接口、
+ * 首个非 lo 接口，最后回退到列表首项。
+ *
+ * @param samples 网络接口采样列表。
+ * @param configured 配置的接口名或 "auto"。
+ * @param proc_root procfs 根目录。
+ * @return 选中的采样指针；列表为空时返回 nullptr。
+ */
 const NetworkSample* selectNetwork(const std::vector<NetworkSample>& samples,
                                    const std::string& configured,
                                    const std::filesystem::path& proc_root)
@@ -90,6 +117,11 @@ const NetworkSample* selectNetwork(const std::vector<NetworkSample>& samples,
     return samples.empty() ? nullptr : &samples.front();
 }
 
+/**
+ * @brief 获取文件系统的块大小。
+ * @param stats statvfs 查询结果。
+ * @return 优先返回 f_frsize，为 0 时回退到 f_bsize。
+ */
 std::uint64_t fragmentSize(const struct statvfs& stats)
 {
     return stats.f_frsize != 0 ? stats.f_frsize : stats.f_bsize;

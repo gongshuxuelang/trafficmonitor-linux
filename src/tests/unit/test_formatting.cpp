@@ -1,6 +1,6 @@
 #include <QTest>
 
-#include "tm/formatting.h"
+#include "core/formatting.h"
 
 using namespace tm_linux;
 

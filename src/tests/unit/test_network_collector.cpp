@@ -1,6 +1,6 @@
 #include <QTest>
 
-#include "tm/collectors.h"
+#include "core/collectors/collectors.h"
 
 using namespace tm_linux;
 using namespace std::chrono_literals;

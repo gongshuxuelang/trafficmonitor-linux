@@ -1,4 +1,4 @@
-#include "tm/logger.h"
+#include "core/logger.h"
 
 #include <QDateTime>
 #include <QDir>
@@ -12,6 +12,11 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 将 Qt 消息级别映射为日志前缀。
+ * @param type 消息级别。
+ * @return 前缀文本，如 "WARN"。
+ */
 QString typeName(QtMsgType type)
 {
     switch (type) {

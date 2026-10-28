@@ -1,4 +1,4 @@
-#include "tm/collectors.h"
+#include "core/collectors/collectors.h"
 
 #include <charconv>
 #include <cctype>
@@ -10,6 +10,11 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 去除字符串两端的空白字符。
+ * @param value 输入文本。
+ * @return 去除空白后的视图。
+ */
 std::string_view trim(std::string_view value)
 {
     while (!value.empty() && std::isspace(static_cast<unsigned char>(value.front()))) {
@@ -21,6 +26,11 @@ std::string_view trim(std::string_view value)
     return value;
 }
 
+/**
+ * @brief 读取文件首行内容。
+ * @param path 文件路径。
+ * @return 首行文本；无法打开时返回空字符串。
+ */
 std::string readFile(const std::filesystem::path& path)
 {
     std::ifstream stream(path);
@@ -32,6 +42,11 @@ std::string readFile(const std::filesystem::path& path)
     return contents;
 }
 
+/**
+ * @brief 判断目录名是否为 cpuN 形式。
+ * @param name 目录名。
+ * @return 匹配 "cpu" 加纯数字时返回 true。
+ */
 bool isCpuDirectoryName(std::string_view name)
 {
     if (!name.starts_with("cpu") || name.size() <= 3) {

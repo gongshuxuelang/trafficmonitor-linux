@@ -1,29 +1,11 @@
-#include <QApplication>
-#include <QDateTime>
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
-#include <QLocalServer>
-#include <QLocalSocket>
-#include <QMessageBox>
-#include <QStandardPaths>
-#include <QTextStream>
-#include <QTimer>
-
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <memory>
-#include <thread>
-#include <unistd.h>
-
-#include "tm/app_settings.h"
-#include "tm/formatting.h"
-#include "tm/logger.h"
-#include "tm/plugin_host.h"
-#include "tm/sampler.h"
-#include "tm/storage.h"
-#include "tm/system_metrics.h"
+#include "pch.h"
+#include "core/app_settings.h"
+#include "core/formatting.h"
+#include "core/logger.h"
+#include "core/plugin/plugin_host.h"
+#include "core/sampler.h"
+#include "core/storage/storage.h"
+#include "core/system_metrics.h"
 #include "ui/floating_window.h"
 #include "ui/settings_dialog.h"
 #include "ui/tray_icon.h"
@@ -35,21 +17,35 @@ namespace {
 constexpr const char* kAppName = "trafficmonitor-linux";
 constexpr const char* kVersion = "0.1.0";
 
+/**
+ * @brief 返回应用的 XDG 配置目录。
+ * @return 完整目录路径，通常为 ~/.config/trafficmonitor-linux。
+ */
 QString configDirectory()
 {
     return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
         + QStringLiteral("/") + QLatin1String(kAppName);
 }
 
+/**
+ * @brief 返回应用的 XDG 数据目录，用于存放历史数据库。
+ * @return 完整目录路径，通常为 ~/.local/share/trafficmonitor-linux。
+ */
 QString dataDirectory()
 {
     return QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
         + QStringLiteral("/") + QLatin1String(kAppName);
 }
 
+/**
+ * @brief 返回应用的状态目录，用于存放运行日志。
+ *
+ * Qt 6.2/6.4 没有 QStandardPaths::GenericStateLocation，因此按 XDG 规范自行解析。
+ *
+ * @return 完整目录路径，通常为 ~/.local/state/trafficmonitor-linux。
+ */
 QString stateDirectory()
 {
-    // Qt 6.2/6.4 没有 QStandardPaths::GenericStateLocation，按 XDG 规范自行解析。
     QString state_dir = qEnvironmentVariable("XDG_STATE_HOME");
     if (state_dir.isEmpty() || !QDir::isAbsolutePath(state_dir)) {
         state_dir = QDir::homePath() + QStringLiteral("/.local/state");
@@ -57,6 +53,13 @@ QString stateDirectory()
     return state_dir + QStringLiteral("/") + QLatin1String(kAppName);
 }
 
+/**
+ * @brief 返回插件扫描目录。
+ *
+ * 优先使用环境变量 TRAFFICMONITOR_PLUGIN_DIR，否则使用可执行文件旁的 plugins/。
+ *
+ * @return 插件目录路径。
+ */
 QString pluginDirectory()
 {
     const QString override_dir = qEnvironmentVariable("TRAFFICMONITOR_PLUGIN_DIR");
@@ -66,16 +69,29 @@ QString pluginDirectory()
     return QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
 }
 
+/**
+ * @brief 返回本地时区的当天日期。
+ * @return yyyy-MM-dd 格式的日期，用作历史记录按天归组的分组键。
+ */
 QString todayLocal()
 {
     return QDate::currentDate().toString(QStringLiteral("yyyy-MM-dd"));
 }
 
+/**
+ * @brief 返回对齐到分钟边界的 Unix 时间戳。
+ * @return 秒级时间戳；同一分钟内的多次调用结果相同，避免重复写入。
+ */
 qint64 alignedTimestamp()
 {
     return (QDateTime::currentSecsSinceEpoch() / 60) * 60;
 }
 
+/**
+ * @brief 构造托盘图标的提示文本。
+ * @param snapshot 最新指标快照。
+ * @return 包含上下行速率、CPU 与内存占用的多行文本，缺失项显示为 "--"。
+ */
 QString tooltipText(const Snapshot& snapshot)
 {
     const QString up = snapshot.network.has_value()
@@ -93,6 +109,14 @@ QString tooltipText(const Snapshot& snapshot)
     return QStringLiteral("↑ %1  ↓ %2\nCPU %3  MEM %4").arg(up, down, cpu, memory);
 }
 
+/**
+ * @brief 实现 --diagnose 诊断模式。
+ *
+ * 打印版本、Qt、会话环境与各类目录，做一次间隔 1 秒的实时采样，
+ * 随后加载插件并输出各项指标，便于排查环境问题。
+ *
+ * @return 进程退出码，固定为 0。
+ */
 int runDiagnostics()
 {
     QTextStream out(stdout);
@@ -171,6 +195,10 @@ int runDiagnostics()
     return 0;
 }
 
+/**
+ * @brief 实现 --quit：通知已运行实例退出。
+ * @return 指令发送成功返回 0；没有运行中的实例返回 1。
+ */
 int runQuit()
 {
     QLocalSocket socket;
@@ -187,6 +215,17 @@ int runQuit()
 
 } // namespace
 
+/**
+ * @brief 程序入口。
+ *
+ * 解析命令行参数，打开数据库并恢复设置，启动采样线程与插件，
+ * 创建悬浮窗和托盘图标后进入事件循环；同时负责单实例通信
+ * 与退出前的数据落盘。
+ *
+ * @param argc 参数个数。
+ * @param argv 参数数组。
+ * @return 进程退出码。
+ */
 int main(int argc, char** argv)
 {
     QStringList arguments;
@@ -237,6 +276,7 @@ int main(int argc, char** argv)
     qInfo() << "Data directory:" << data_dir;
 
     const QString database_path = data_dir + QStringLiteral("/trafficmonitor.db");
+    // 打开数据库并初始化表结构，失败时返回 nullptr。
     auto openDatabase = [](const QString& path) -> std::unique_ptr<Database> {
         auto database = std::make_unique<Database>(path.toStdString());
         QString error;
@@ -314,6 +354,7 @@ int main(int argc, char** argv)
     FloatingWindow window;
     window.setSettings(settings);
 
+    // 将插件条目同步到悬浮窗；未启用 GPU 监控时过滤掉 GPU 插件条目。
     auto updatePluginItems = [&]() {
         auto items = plugin_host.allItems();
         if (!settings.gpu_enabled) {
@@ -345,6 +386,8 @@ int main(int argc, char** argv)
         });
     }
 
+    // 将今日累计流量相对上次落盘的增量按分钟写入历史库，
+    // 同时写入具体接口和 __total__ 汇总两条记录。
     auto writeHistory = [&]() {
         const auto latest = sampler.latest();
         if (!latest || !latest->network.has_value()) {
@@ -370,6 +413,7 @@ int main(int argc, char** argv)
         last_history_down = down;
     };
 
+    // 应用新设置：持久化到数据库，重启采样器并刷新窗口内容。
     auto applySettings = [&](AppSettings new_settings) {
         settings = std::move(new_settings);
         settings_model.save(settings);
@@ -383,6 +427,7 @@ int main(int argc, char** argv)
         window.show();
     };
 
+    // 打开模态设置对话框，用户确认后应用新设置。
     auto showSettings = [&]() {
         std::vector<std::string> plugin_item_ids;
         for (const auto& item : plugin_host.allItems()) {

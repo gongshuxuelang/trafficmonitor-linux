@@ -12,6 +12,10 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 生成主题图标不可用时的占位图标。
+ * @return 绘制有 "TM" 字样的圆角图标。
+ */
 QIcon fallbackIcon()
 {
     QPixmap pixmap(32, 32);

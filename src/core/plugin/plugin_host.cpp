@@ -1,4 +1,4 @@
-#include "tm/plugin_host.h"
+#include "core/plugin/plugin_host.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -16,12 +16,23 @@ namespace {
 
 using PluginFactory = const TMPluginV1* (*)(uint32_t);
 
+/**
+ * @brief 取出并清空动态加载器的错误信息。
+ * @return 错误文本；无错误时返回通用描述。
+ */
 std::string takeDlError()
 {
     const char* error = ::dlerror();
     return error != nullptr ? std::string(error) : std::string("unknown dynamic loader error");
 }
 
+/**
+ * @brief 计算默认的插件配置目录。
+ *
+ * 优先使用 XDG_CONFIG_HOME，其次 HOME/.config，最后回退到 /tmp。
+ *
+ * @return 配置目录路径。
+ */
 std::string defaultConfigDir()
 {
     if (const char* xdg = std::getenv("XDG_CONFIG_HOME"); xdg != nullptr && *xdg != '\0') {
@@ -33,6 +44,12 @@ std::string defaultConfigDir()
     return "/tmp/trafficmonitor-linux/plugins";
 }
 
+/**
+ * @brief 根据数据是否有效返回对应的标志位。
+ * @param valid 数据是否有效。
+ * @param flag 标志位。
+ * @return 有效时返回 flag，否则返回 0。
+ */
 uint64_t validFlag(bool valid, uint32_t flag)
 {
     return valid ? flag : 0;

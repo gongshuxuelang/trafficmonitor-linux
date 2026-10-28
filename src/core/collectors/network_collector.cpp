@@ -1,4 +1,4 @@
-#include "tm/collectors.h"
+#include "core/collectors/collectors.h"
 
 #include <algorithm>
 #include <cctype>
@@ -9,6 +9,11 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 去除字符串两端的空白字符。
+ * @param value 输入文本。
+ * @return 去除空白后的视图。
+ */
 std::string_view trim(std::string_view value)
 {
     while (!value.empty() && std::isspace(static_cast<unsigned char>(value.front()))) {
@@ -20,6 +25,12 @@ std::string_view trim(std::string_view value)
     return value;
 }
 
+/**
+ * @brief 解析无符号整数文本。
+ * @param value 输入文本。
+ * @param output 解析结果输出。
+ * @return 解析成功且无剩余字符时返回 true。
+ */
 bool parseUnsigned(std::string_view value, std::uint64_t& output)
 {
     if (value.empty()) {

@@ -3,8 +3,8 @@
 
 #include <memory>
 
-#include "tm/app_settings.h"
-#include "tm/storage.h"
+#include "core/app_settings.h"
+#include "core/storage/storage.h"
 
 using namespace tm_linux;
 

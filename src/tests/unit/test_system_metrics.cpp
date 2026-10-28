@@ -4,7 +4,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-#include "tm/system_metrics.h"
+#include "core/system_metrics.h"
 
 using namespace tm_linux;
 

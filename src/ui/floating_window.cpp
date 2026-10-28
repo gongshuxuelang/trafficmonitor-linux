@@ -15,6 +15,11 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 将 std::string 转换为 QString。
+ * @param value 输入字符串。
+ * @return 转换后的文本。
+ */
 QString toQString(const std::string& value)
 {
     return QString::fromStdString(value);

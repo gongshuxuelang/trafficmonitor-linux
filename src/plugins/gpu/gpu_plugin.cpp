@@ -1,4 +1,4 @@
-#include "tm_plugin_api.h"
+#include "core/plugin/tm_plugin_api.h"
 
 #include <array>
 #include <chrono>
@@ -54,17 +54,36 @@ NvmlDeviceGetTemperature g_nvml_temperature = nullptr;
 bool g_available = false;
 std::chrono::steady_clock::time_point g_last_attempt{};
 
+/**
+ * @brief 将文本写入条目的显示缓冲区。
+ * @param state 条目状态。
+ * @param text 文本，超出缓冲区时会被截断。
+ */
 void setText(ItemState& state, const char* text)
 {
     std::snprintf(state.text.data(), state.text.size(), "%s", text);
 }
 
+/**
+ * @brief 从动态库中解析函数符号。
+ * @tparam Function 函数指针类型。
+ * @param handle 动态库句柄。
+ * @param name 符号名。
+ * @return 解析到的函数指针；失败时返回 nullptr。
+ */
 template <typename Function>
 Function resolve(void* handle, const char* name)
 {
     return reinterpret_cast<Function>(::dlsym(handle, name));
 }
 
+/**
+ * @brief 确保 NVML 已加载并完成初始化。
+ *
+ * 加载失败后 5 秒内不会重复尝试，避免频繁 dlopen。
+ *
+ * @return NVML 可用返回 true。
+ */
 bool ensureNvmlLocked()
 {
     if (g_available) {
@@ -109,6 +128,11 @@ bool ensureNvmlLocked()
     return true;
 }
 
+/**
+ * @brief 读取第一块 GPU 的使用率、显存与温度并更新显示文本。
+ *
+ * NVML 不可用或查询失败时，对应条目显示 "--"。
+ */
 void refreshValues()
 {
     std::lock_guard<std::mutex> lock(g_mutex);
@@ -159,12 +183,22 @@ void refreshValues()
     }
 }
 
+/**
+ * @brief 线程安全地获取条目文本视图。
+ * @param state 条目状态。
+ * @return 指向内部缓冲区的文本视图。
+ */
 TMStringView valueView(const ItemState& state)
 {
     std::lock_guard<std::mutex> lock(g_mutex);
     return TMStringView{state.text.data(), std::strlen(state.text.data())};
 }
 
+/**
+ * @brief 插件 ABI 的取值回调。
+ * @param user_data 指向 ItemState 的用户数据。
+ * @return 当前显示文本。
+ */
 TMStringView itemValue(void* user_data)
 {
     return valueView(*static_cast<const ItemState*>(user_data));
@@ -215,12 +249,19 @@ const TMPluginItemV1 kItems[]{
     },
 };
 
+/**
+ * @brief 插件初始化回调：立即刷新一次 GPU 数值。
+ * @return 固定返回 TM_OK。
+ */
 TMResult initializePlugin(void*, const TMPluginHostV1*)
 {
     refreshValues();
     return TM_OK;
 }
 
+/**
+ * @brief 插件关闭回调：关闭 NVML 并释放动态库句柄。
+ */
 void shutdownPlugin(void*)
 {
     std::lock_guard<std::mutex> lock(g_mutex);
@@ -241,16 +282,28 @@ void shutdownPlugin(void*)
     g_nvml_temperature = nullptr;
 }
 
+/**
+ * @brief 插件更新回调：收到指标更新后刷新 GPU 数值。
+ */
 void updatePlugin(void*, const TMMetricSnapshot*)
 {
     refreshValues();
 }
 
+/**
+ * @brief 返回插件条目数量。
+ * @return 条目数。
+ */
 uint32_t itemCount(void*)
 {
     return sizeof(kItems) / sizeof(kItems[0]);
 }
 
+/**
+ * @brief 按索引返回插件条目。
+ * @param index 条目索引。
+ * @return 条目指针；越界时返回 nullptr。
+ */
 const TMPluginItemV1* getItem(void*, uint32_t index)
 {
     if (index >= sizeof(kItems) / sizeof(kItems[0])) {
@@ -259,6 +312,10 @@ const TMPluginItemV1* getItem(void*, uint32_t index)
     return &kItems[index];
 }
 
+/**
+ * @brief 返回插件提示文本。
+ * @return 文本视图。
+ */
 TMStringView tooltip(void*)
 {
     static const char text[] = "NVIDIA GPU metrics";
@@ -289,6 +346,13 @@ const TMPluginV1 kPlugin{
 
 } // namespace
 
+/**
+ * @brief 插件入口：返回插件实例。
+ *
+ * host_api_version 参数当前未使用。
+ *
+ * @return 插件描述结构指针。
+ */
 extern "C" TM_PLUGIN_EXPORT const TMPluginV1* tm_plugin_get_instance(uint32_t)
 {
     return &kPlugin;

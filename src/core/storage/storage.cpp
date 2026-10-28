@@ -1,4 +1,4 @@
-#include "tm/storage.h"
+#include "core/storage/storage.h"
 
 #include <QDateTime>
 #include <QFile>
@@ -15,6 +15,11 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 写入错误信息。
+ * @param error 错误输出指针，可为 nullptr。
+ * @param message 错误文本。
+ */
 void setError(QString* error, const QString& message)
 {
     if (error != nullptr) {
@@ -22,11 +27,20 @@ void setError(QString* error, const QString& message)
     }
 }
 
+/**
+ * @brief 从查询对象提取 SQL 错误并写入错误输出。
+ * @param error 错误输出指针，可为 nullptr。
+ * @param query 执行失败的查询。
+ */
 void setSqlError(QString* error, const QSqlQuery& query)
 {
     setError(error, query.lastError().text());
 }
 
+/**
+ * @brief 获取当前 Unix 毫秒时间戳。
+ * @return 毫秒时间戳。
+ */
 qint64 nowMs()
 {
     return QDateTime::currentMSecsSinceEpoch();

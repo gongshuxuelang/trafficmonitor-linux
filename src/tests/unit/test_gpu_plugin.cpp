@@ -1,7 +1,7 @@
 #include <QStringList>
 #include <QTest>
 
-#include "tm/plugin_host.h"
+#include "core/plugin/plugin_host.h"
 
 using namespace tm_linux;
 

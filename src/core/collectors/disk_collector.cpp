@@ -1,4 +1,4 @@
-#include "tm/collectors.h"
+#include "core/collectors/collectors.h"
 
 #include <algorithm>
 #include <charconv>
@@ -9,6 +9,12 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 解析无符号整数文本。
+ * @param value 输入文本。
+ * @param output 解析结果输出。
+ * @return 解析成功且无剩余字符时返回 true。
+ */
 bool parseUnsigned(std::string_view value, std::uint64_t& output)
 {
     if (value.empty()) {

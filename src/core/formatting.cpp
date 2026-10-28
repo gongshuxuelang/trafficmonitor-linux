@@ -1,4 +1,4 @@
-#include "tm/formatting.h"
+#include "core/formatting.h"
 
 #include <algorithm>
 #include <cmath>
@@ -8,6 +8,13 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 按指定小数位和单位拼接数值文本。
+ * @param value 数值。
+ * @param unit 单位字符串。
+ * @param decimals 小数位数。
+ * @return 形如 "12.3 MB/s" 的文本。
+ */
 std::string formatWithUnit(double value, const char* unit, int decimals)
 {
     char buffer[64];

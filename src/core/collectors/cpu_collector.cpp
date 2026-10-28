@@ -1,4 +1,4 @@
-#include "tm/collectors.h"
+#include "core/collectors/collectors.h"
 
 #include <algorithm>
 #include <charconv>
@@ -9,17 +9,33 @@ namespace tm_linux {
 
 namespace {
 
+/**
+ * @brief 计算 CPU 各时间计数之和。
+ * @param times CPU 时间计数。
+ * @return 总时间。
+ */
 std::uint64_t totalTime(const CpuTimes& times)
 {
     return times.user + times.nice + times.system + times.idle + times.iowait + times.irq
         + times.softirq + times.steal;
 }
 
+/**
+ * @brief 计算 CPU 空闲时间（idle + iowait）。
+ * @param times CPU 时间计数。
+ * @return 空闲时间。
+ */
 std::uint64_t idleTime(const CpuTimes& times)
 {
     return times.idle + times.iowait;
 }
 
+/**
+ * @brief 解析无符号整数文本。
+ * @param value 输入文本。
+ * @param output 解析结果输出。
+ * @return 解析成功且无剩余字符时返回 true。
+ */
 bool parseUnsigned(std::string_view value, std::uint64_t& output)
 {
     if (value.empty()) {

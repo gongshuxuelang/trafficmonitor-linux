@@ -3,8 +3,10 @@
 
 #include "pch.h"
 
-#include "core/collectors/collectors.h"
-#include "core/metrics.h"
+#include "common/DTO/metrics.h"
+#include "core/collectors/CPU/cpu_collector.h"
+#include "core/collectors/disk/disk_collector.h"
+#include "core/collectors/network/network_collector.h"
 
 namespace tm_linux {
 

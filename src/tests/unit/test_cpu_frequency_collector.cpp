@@ -3,7 +3,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-#include "core/collectors/collectors.h"
+#include "core/collectors/CPU/cpu_frequency_collector.h"
 
 using namespace tm_linux;
 

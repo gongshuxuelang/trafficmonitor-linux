@@ -3,8 +3,8 @@
 
 #include "pch.h"
 
-#include "core/app_settings.h"
-#include "core/metrics.h"
+#include "common/DTO/app_settings.h"
+#include "common/DTO/metrics.h"
 #include "core/plugin/plugin_host.h"
 
 namespace Ui {

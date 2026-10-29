@@ -1,9 +1,9 @@
-#ifndef TRAFFICMONITOR_LINUX_SRC_CORE_APP_SETTINGS_H_
-#define TRAFFICMONITOR_LINUX_SRC_CORE_APP_SETTINGS_H_
+#ifndef TRAFFICMONITOR_LINUX_SRC_COMMON_DTO_APP_SETTINGS_H_
+#define TRAFFICMONITOR_LINUX_SRC_COMMON_DTO_APP_SETTINGS_H_
 
 #include "pch.h"
 
-#include "core/formatting.h"
+#include "common/formatting.h"
 #include "core/storage/storage.h"
 
 namespace tm_linux {
@@ -81,4 +81,4 @@ private:
 
 } // namespace tm_linux
 
-#endif  // TRAFFICMONITOR_LINUX_SRC_CORE_APP_SETTINGS_H_
+#endif  // TRAFFICMONITOR_LINUX_SRC_COMMON_DTO_APP_SETTINGS_H_

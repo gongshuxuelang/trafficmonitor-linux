@@ -1,6 +1,6 @@
 #include <QTest>
 
-#include "core/collectors/collectors.h"
+#include "core/collectors/network/network_collector.h"
 
 using namespace tm_linux;
 using namespace std::chrono_literals;

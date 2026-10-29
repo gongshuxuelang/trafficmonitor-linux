@@ -3,7 +3,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-#include "core/logger.h"
+#include "common/logger.h"
 
 using namespace tm_linux;
 

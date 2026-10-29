@@ -1,4 +1,4 @@
-#include "core/collectors/collectors.h"
+#include "core/collectors/CPU/cpu_collector.h"
 
 namespace tm_linux {
 

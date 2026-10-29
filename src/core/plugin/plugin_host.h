@@ -3,7 +3,7 @@
 
 #include "pch.h"
 
-#include "core/metrics.h"
+#include "common/DTO/metrics.h"
 #include "core/plugin/tm_plugin_api.h"
 
 namespace tm_linux {

@@ -3,7 +3,7 @@
 
 #include "pch.h"
 
-#include "core/app_settings.h"
+#include "common/DTO/app_settings.h"
 
 namespace Ui {
 class SettingsDialog;

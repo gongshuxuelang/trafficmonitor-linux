@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-#include "core/collectors/collectors.h"
+#include "core/collectors/disk/disk_collector.h"
 
 using namespace tm_linux;
 using namespace std::chrono_literals;

@@ -3,6 +3,10 @@
 #include <sys/statvfs.h>
 #include <unistd.h>
 
+#include "core/collectors/CPU/cpu_frequency_collector.h"
+#include "core/collectors/collectors.h"
+#include "core/collectors/memory/memory_collector.h"
+
 namespace tm_linux {
 
 namespace {

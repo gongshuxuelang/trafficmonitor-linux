@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "core/app_settings.h"
+#include "common/DTO/app_settings.h"
 #include "core/storage/storage.h"
 
 using namespace tm_linux;

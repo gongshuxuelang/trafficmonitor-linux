@@ -1,0 +1,80 @@
+<mxfile host="Electron">
+  <diagram name="第 1 页" id="1kSlEu5AcsWvhaRP-EIX">
+    <mxGraphModel dx="1347" dy="965" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="UI显示" vertex="1">
+          <mxGeometry height="60" width="120" x="54" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="状态栏显示" vertex="1">
+          <mxGeometry height="60" width="120" x="414" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="显示：CPU，网络，内存的占用率，频率，显示插件信息" vertex="1">
+          <mxGeometry height="40" width="500" x="24" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-5" edge="1" parent="1" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="isWDVm7fNP9rQ0Nehpf5-1" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="114" y="230" as="sourcePoint" />
+            <mxPoint x="164" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-6" edge="1" parent="1" source="isWDVm7fNP9rQ0Nehpf5-3" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.902;exitY=-0.034;exitDx=0;exitDy=0;exitPerimeter=0;" target="isWDVm7fNP9rQ0Nehpf5-2" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="-76" y="410" as="sourcePoint" />
+            <mxPoint x="-26" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="系统获取数据" vertex="1">
+          <mxGeometry height="60" width="120" x="64" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-8" edge="1" parent="1" source="isWDVm7fNP9rQ0Nehpf5-7" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="24" y="370" as="sourcePoint" />
+            <mxPoint x="124" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;textDirection=vertical-lr;" value="设置页面" vertex="1">
+          <mxGeometry height="460" width="40" x="630" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-11" edge="1" parent="1" source="isWDVm7fNP9rQ0Nehpf5-2" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;width=11;endSize=6;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="540" y="110" as="sourcePoint" />
+            <mxPoint x="626" y="90" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-12" edge="1" parent="1" source="isWDVm7fNP9rQ0Nehpf5-1" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.983;exitY=0.617;exitDx=0;exitDy=0;exitPerimeter=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <Array as="points">
+              <mxPoint x="250" y="97" />
+              <mxPoint x="250" y="170" />
+            </Array>
+            <mxPoint x="190" y="90" as="sourcePoint" />
+            <mxPoint x="626" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-13" edge="1" parent="1" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="isWDVm7fNP9rQ0Nehpf5-7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="629" y="390" as="sourcePoint" />
+            <mxPoint x="460" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="插件提供" vertex="1">
+          <mxGeometry height="60" width="120" x="330" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-15" edge="1" parent="1" source="isWDVm7fNP9rQ0Nehpf5-14" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" value="">
+          <mxGeometry height="100" relative="1" width="100" as="geometry">
+            <mxPoint x="290" y="370" as="sourcePoint" />
+            <mxPoint x="390" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="isWDVm7fNP9rQ0Nehpf5-16" edge="1" parent="1" source="isWDVm7fNP9rQ0Nehpf5-10" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.003;exitY=0.947;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="isWDVm7fNP9rQ0Nehpf5-14" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="290" y="570" as="sourcePoint" />
+            <mxPoint x="340" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

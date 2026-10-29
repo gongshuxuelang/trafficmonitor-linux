@@ -1,4 +1,4 @@
-#include "core/app_settings.h"
+#include "common/DTO/app_settings.h"
 
 namespace tm_linux {
 

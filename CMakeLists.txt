@@ -73,19 +73,19 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt6 6.2 REQUIRED COMPONENTS Core Gui Widgets Sql Network Test)
 
 add_library(tm_core STATIC
-    src/core/collectors/network_collector.cpp
-    src/core/collectors/cpu_collector.cpp
-    src/core/collectors/memory_collector.cpp
-    src/core/collectors/disk_collector.cpp
+    src/core/collectors/CPU/cpu_collector.cpp
+    src/core/collectors/CPU/cpu_frequency_collector.cpp
+    src/core/collectors/disk/disk_collector.cpp
+    src/core/collectors/memory/memory_collector.cpp
+    src/core/collectors/network/network_collector.cpp
     src/core/collectors/temperature_collector.cpp
-    src/core/collectors/cpu_frequency_collector.cpp
     src/core/system_metrics.cpp
     src/core/storage/storage.cpp
     src/core/plugin/plugin_host.cpp
-    src/core/formatting.cpp
-    src/core/app_settings.cpp
+    src/common/formatting.cpp
+    src/common/DTO/app_settings.cpp
     src/core/sampler.cpp
-    src/core/logger.cpp
+    src/common/logger.cpp
 )
 target_include_directories(tm_core PUBLIC src src/include)
 # pch.h 汇总了项目用到的全部 Qt 头文件，因此核心库也需要这些模块的头文件路径。
